@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# The IDX-API project is its own git repository (and holds the 250 MB database): do not upload it with this one
+Documents/
+
+# Runtime files created by the server
+idx_trend_studio/*.log
+idx_trend_studio/cache/
+idx_trend_studio/*.tmp
+
+# Screenshots / exports
+*.png
+*.pdf
+
+# macOS / Windows / editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

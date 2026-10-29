@@ -1,0 +1,996 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<title>IDX Trend Studio English</title>
+<style>
+/* Layout: a single macOS window — translucent source-list sidebar, unified toolbar, chart canvas, segmented tabs below, inspector column on the right. */
+:root{
+  --desk:#dcdde3; --desk2:#c9ccd6;
+  --win:#ffffff; --pane:#f6f6f8; --sidebar:rgba(236,236,241,.86); --toolbar:rgba(250,250,252,.9);
+  --fg:#1d1d1f; --fg2:#5f5f66; --fg3:#86868b;
+  --sep:rgba(0,0,0,.1); --fill:rgba(0,0,0,.045); --fill2:rgba(0,0,0,.08);
+  --accent:#007aff; --accent-ink:#0060c7; --accent-soft:rgba(0,122,255,.12);
+  --up:#1e8f43; --down:#d63a2f; --warn:#b56b00; --gold:#a67900; --violet:#8a3ffc;
+  --up-soft:rgba(52,199,89,.14); --down-soft:rgba(255,59,48,.12); --warn-soft:rgba(255,149,0,.14); --info-soft:rgba(0,122,255,.10);
+  --fan1:rgba(0,122,255,.20); --fan2:rgba(0,122,255,.09);
+  --zone-s:rgba(52,199,89,.11); --zone-r:rgba(255,59,48,.10);
+  --shadow:0 22px 70px rgba(0,0,0,.22),0 0 0 .5px rgba(0,0,0,.18);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,"Segoe UI",Roboto,sans-serif;
+  --display:-apple-system,BlinkMacSystemFont,"SF Pro Display","Helvetica Neue",system-ui,sans-serif;
+  --mono:ui-monospace,"SF Mono",SFMono-Regular,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --desk:#101114; --desk2:#1b1d24;
+  --win:#1e1e20; --pane:#252528; --sidebar:rgba(44,44,48,.84); --toolbar:rgba(40,40,43,.92);
+  --fg:#f5f5f7; --fg2:#b0b0b6; --fg3:#8a8a90;
+  --sep:rgba(255,255,255,.1); --fill:rgba(255,255,255,.06); --fill2:rgba(255,255,255,.1);
+  --accent:#0a84ff; --accent-ink:#5aa9ff; --accent-soft:rgba(10,132,255,.2);
+  --up:#30d158; --down:#ff5a4f; --warn:#ffa31a; --gold:#ffd60a; --violet:#bf8bff;
+  --up-soft:rgba(48,209,88,.15); --down-soft:rgba(255,69,58,.15); --warn-soft:rgba(255,159,10,.15); --info-soft:rgba(10,132,255,.16);
+  --fan1:rgba(10,132,255,.30); --fan2:rgba(10,132,255,.13);
+  --zone-s:rgba(48,209,88,.10); --zone-r:rgba(255,69,58,.10);
+  --shadow:0 22px 70px rgba(0,0,0,.6),0 0 0 .5px rgba(255,255,255,.12);
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --desk:#101114; --desk2:#1b1d24;
+  --win:#1e1e20; --pane:#252528; --sidebar:rgba(44,44,48,.84); --toolbar:rgba(40,40,43,.92);
+  --fg:#f5f5f7; --fg2:#b0b0b6; --fg3:#8a8a90;
+  --sep:rgba(255,255,255,.1); --fill:rgba(255,255,255,.06); --fill2:rgba(255,255,255,.1);
+  --accent:#0a84ff; --accent-ink:#5aa9ff; --accent-soft:rgba(10,132,255,.2);
+  --up:#30d158; --down:#ff5a4f; --warn:#ffa31a; --gold:#ffd60a; --violet:#bf8bff;
+  --up-soft:rgba(48,209,88,.15); --down-soft:rgba(255,69,58,.15); --warn-soft:rgba(255,159,10,.15); --info-soft:rgba(10,132,255,.16);
+  --fan1:rgba(10,132,255,.30); --fan2:rgba(10,132,255,.13);
+  --zone-s:rgba(48,209,88,.10); --zone-r:rgba(255,69,58,.10);
+  --shadow:0 22px 70px rgba(0,0,0,.6),0 0 0 .5px rgba(255,255,255,.12);
+  color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{margin:0;background:radial-gradient(1200px 700px at 20% -10%,var(--desk2),transparent 70%),var(--desk);color:var(--fg);font:13px/1.45 var(--sans);-webkit-font-smoothing:antialiased;padding:20px 16px;padding-block:20px 28px;min-height:100%}
+button,input,select,textarea{font:inherit;color:inherit}
+.num{font-variant-numeric:tabular-nums;font-family:var(--sans)}
+.mono{font-family:var(--mono);font-size:12px}
+
+.window{max-width:1480px;margin:0 auto;background:var(--win);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
+.titlebar{display:flex;align-items:center;gap:14px;padding:10px 14px;background:var(--toolbar);border-bottom:.5px solid var(--sep);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);position:sticky;top:env(safe-area-inset-top,0px);z-index:20;flex-wrap:wrap}
+.lights{display:flex;gap:8px;flex:none}
+.lights i{width:12px;height:12px;border-radius:50%;display:block;box-shadow:inset 0 0 0 .5px rgba(0,0,0,.18)}
+.lights i:nth-child(1){background:#ff5f57}.lights i:nth-child(2){background:#febc2e}.lights i:nth-child(3){background:#28c840}
+.tb-title{display:flex;align-items:baseline;gap:10px;min-width:0;flex:1 1 220px}
+.tb-title h1{font:600 15px/1.2 var(--display);margin:0;letter-spacing:-.01em;white-space:nowrap}
+.tb-title .px{font:600 15px var(--display);font-variant-numeric:tabular-nums}
+.tb-title .chg{font-weight:500;font-variant-numeric:tabular-nums}
+.tb-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+
+.seg{display:inline-flex;background:var(--fill2);border-radius:7px;padding:2px;gap:2px}
+.seg button{border:0;background:transparent;padding:3px 10px;border-radius:5px;font-size:12px;font-weight:500;color:var(--fg);cursor:pointer;white-space:nowrap}
+.seg button[aria-pressed="true"]{background:var(--win);box-shadow:0 1px 2px rgba(0,0,0,.18),0 0 0 .5px rgba(0,0,0,.06)}
+.seg button:focus-visible,.btn:focus-visible,.chip:focus-visible,.wl-item:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px;box-shadow:0 0 0 1px var(--accent)}
+.btn{border:0;border-radius:6px;padding:4px 11px;font-size:12.5px;font-weight:500;cursor:pointer;background:var(--win);box-shadow:0 0 0 .5px var(--sep),0 1px 1.5px rgba(0,0,0,.12)}
+.btn.primary{background:var(--accent);color:#fff;box-shadow:none}
+.btn.ghost{background:transparent;box-shadow:none;color:var(--accent-ink)}
+.btn.sm{padding:2px 8px;font-size:12px}
+
+.app{display:grid;grid-template-columns:232px minmax(0,1fr) 284px;min-height:720px}
+/* Sidebar */
+.sidebar{background:var(--sidebar);border-right:.5px solid var(--sep);padding:12px 8px;display:flex;flex-direction:column;gap:10px;min-width:0;backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px)}
+.search{display:flex;align-items:center;gap:6px;background:var(--fill2);border-radius:7px;padding:4px 8px;margin:0 4px}
+.search input{border:0;background:transparent;outline:none;width:100%;font-size:12.5px}
+.search svg{flex:none;opacity:.55}
+.sb-head{font-size:11px;font-weight:600;color:var(--fg3);padding:4px 10px 2px;display:flex;justify-content:space-between;align-items:center}
+.wl{display:flex;flex-direction:column;gap:1px;overflow:auto;max-height:640px}
+.wl-item{display:grid;grid-template-columns:1fr auto;grid-template-rows:auto auto;column-gap:8px;align-items:center;padding:5px 10px;border-radius:6px;cursor:pointer;border:0;background:transparent;text-align:left;width:100%}
+.wl-item:hover{background:var(--fill)}
+.wl-item[aria-current="true"]{background:var(--accent);color:#fff}
+.wl-item[aria-current="true"] .sub,.wl-item[aria-current="true"] .wchg{color:rgba(255,255,255,.88)!important}
+.wl-item[aria-current="true"] svg path{stroke:#fff}
+.wl-item .tk{font-weight:600;font-size:12.5px}
+.wl-item .sub{font-size:11px;color:var(--fg2);font-variant-numeric:tabular-nums}
+.wl-item .wchg{font-size:11px;font-weight:500;font-variant-numeric:tabular-nums;text-align:right}
+.wl-item svg{grid-row:1/3;grid-column:2;display:none}
+.sb-note{margin:auto 4px 0;padding:9px 10px;border-radius:8px;background:var(--warn-soft);font-size:11.5px;line-height:1.45;color:var(--fg)}
+.sb-note b{color:var(--warn)}
+
+/* Main */
+.main{min-width:0;display:flex;flex-direction:column;background:var(--win)}
+.subbar{display:flex;gap:8px;align-items:center;padding:8px 14px;border-bottom:.5px solid var(--sep);flex-wrap:wrap}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{border:0;border-radius:999px;padding:2px 9px;font-size:11.5px;font-weight:500;cursor:pointer;background:var(--fill);color:var(--fg2);display:inline-flex;align-items:center;gap:5px}
+.chip i{width:8px;height:8px;border-radius:2px;display:inline-block;opacity:.4}
+.chip[aria-pressed="true"]{background:var(--accent-soft);color:var(--accent-ink)}
+.chip[aria-pressed="true"] i{opacity:1}
+.chart-wrap{position:relative;height:clamp(380px,56vh,580px);margin:6px 6px 0}
+.chart-wrap canvas{position:absolute;inset:0;width:100%;height:100%;cursor:crosshair;touch-action:pan-y}
+.tip{position:absolute;pointer-events:none;background:var(--toolbar);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-radius:8px;box-shadow:0 6px 24px rgba(0,0,0,.18),0 0 0 .5px var(--sep);padding:7px 10px;font-size:11.5px;line-height:1.5;min-width:150px;z-index:5;font-variant-numeric:tabular-nums}
+.tip b{font-weight:600}
+.tip .r{display:flex;justify-content:space-between;gap:14px}
+.tip .r span:first-child{color:var(--fg2)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;padding:4px 16px 8px;font-size:11px;color:var(--fg2)}
+.legend span{display:inline-flex;gap:5px;align-items:center}
+.legend i{width:14px;height:2px;display:inline-block;border-radius:1px}
+
+.tabs .seg{margin:0 auto;flex:none}
+.group h2{font:600 13px var(--display);margin:0;color:var(--fg)}
+.group h3{font:600 11px var(--sans);margin:0 0 4px;color:var(--fg2);text-transform:uppercase;letter-spacing:.04em}
+.tabs{display:flex;padding:10px 14px;border-top:.5px solid var(--sep);background:var(--pane);overflow-x:auto}
+.panel{padding:16px 18px 22px;background:var(--pane);flex:1;display:flex;flex-direction:column;gap:16px;min-width:0}
+.panel h2{font:600 13px var(--display);margin:0;color:var(--fg)}
+.panel h3{font:600 12px var(--sans);margin:0 0 6px;color:var(--fg2);text-transform:uppercase;letter-spacing:.04em}
+.group{background:var(--win);border-radius:10px;box-shadow:0 0 0 .5px var(--sep);overflow:hidden;min-width:0}
+.group-h{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:.5px solid var(--sep);flex-wrap:wrap}
+.group-b{padding:12px 14px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:0}
+.kpi{padding:11px 14px;border-right:.5px solid var(--sep);border-bottom:.5px solid var(--sep);min-width:0}
+.kpi .l{font-size:11px;color:var(--fg2)}
+.kpi .v{font:600 19px/1.25 var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.01em;margin-top:2px}
+.kpi .s{font-size:11px;color:var(--fg2);font-variant-numeric:tabular-nums}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.insights{display:flex;flex-direction:column;gap:8px}
+.ins{display:grid;grid-template-columns:20px 1fr;gap:8px;padding:9px 12px;border-radius:8px;font-size:12.5px;line-height:1.55}
+.ins .dot{width:18px;height:18px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:#fff;margin-top:1px}
+.ins.bull{background:var(--up-soft)} .ins.bull .dot{background:var(--up)}
+.ins.bear{background:var(--down-soft)} .ins.bear .dot{background:var(--down)}
+.ins.warn{background:var(--warn-soft)} .ins.warn .dot{background:var(--warn)}
+.ins.info{background:var(--info-soft)} .ins.info .dot{background:var(--accent)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;font-variant-numeric:tabular-nums}
+th{font-size:11px;font-weight:600;color:var(--fg2);text-align:right;padding:6px 10px;border-bottom:.5px solid var(--sep);white-space:nowrap}
+td{padding:6px 10px;border-bottom:.5px solid var(--sep);text-align:right;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+tr:last-child td{border-bottom:0}
+tbody tr:nth-child(even){background:var(--fill)}
+tr.here td{background:var(--accent-soft)!important;font-weight:600}
+.tscroll{overflow-x:auto}
+.pill{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 8px;font-size:11px;font-weight:600;white-space:nowrap}
+.pill.bull{background:var(--up-soft);color:var(--up)} .pill.bear{background:var(--down-soft);color:var(--down)}
+.pill.neutral{background:var(--fill2);color:var(--fg2)} .pill.warn{background:var(--warn-soft);color:var(--warn)} .pill.info{background:var(--info-soft);color:var(--accent-ink)}
+.up{color:var(--up)} .down{color:var(--down)} .muted{color:var(--fg2)} .gold{color:var(--gold)}
+.form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px 14px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field label{font-size:11px;color:var(--fg2);font-weight:500}
+.field input,.field select{border:0;border-radius:6px;padding:5px 8px;background:var(--win);box-shadow:0 0 0 .5px var(--sep),inset 0 1px 1px rgba(0,0,0,.04);font-variant-numeric:tabular-nums;width:100%;min-width:0}
+.field input[type=range]{box-shadow:none;padding:0;accent-color:var(--accent);background:transparent}
+.hint{font-size:11.5px;color:var(--fg2);line-height:1.5}
+.pat-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px}
+.pat{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:6px 10px;border-radius:7px;background:var(--fill);font-size:12px}
+.pat.on{background:var(--win);box-shadow:0 0 0 .5px var(--sep)}
+.pat.off{color:var(--fg3)}
+.pcard{padding:12px 14px;border-bottom:.5px solid var(--sep);display:flex;flex-direction:column;gap:4px}
+.pcard:last-child{border-bottom:0}
+.pcard .t{display:flex;gap:8px;align-items:center;font-weight:600}
+.inline-input{border:0;border-radius:5px;padding:2px 6px;background:var(--fill);width:84px;text-align:right;font-variant-numeric:tabular-nums}
+.inline-input.tk{width:64px;text-align:left;text-transform:uppercase}
+
+/* Inspector */
+.inspector{border-left:.5px solid var(--sep);background:var(--pane);padding:14px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.gauge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px 0 2px}
+.gauge .big{font:600 26px var(--display);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.meter{height:6px;border-radius:3px;background:linear-gradient(90deg,var(--down),var(--fill2) 50%,var(--up));position:relative;width:100%;margin:4px 0}
+.meter b{position:absolute;top:-4px;width:3px;height:14px;border-radius:2px;background:var(--fg);transform:translateX(-50%)}
+.sig{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:.5px solid var(--sep);font-size:12.5px}
+.sig:last-child{border-bottom:0}
+.sig .k{color:var(--fg2)}
+.lv{display:flex;justify-content:space-between;gap:8px;padding:4px 0;font-size:12.5px;font-variant-numeric:tabular-nums}
+.lv .src{color:var(--fg2);font-size:11.5px}
+.footer{padding:10px 16px;border-top:.5px solid var(--sep);font-size:11px;color:var(--fg2);display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--toolbar)}
+
+/* Sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,.28);display:flex;justify-content:center;align-items:flex-start;padding:60px 16px;z-index:50}
+.sheet{background:var(--win);border-radius:12px;box-shadow:0 30px 80px rgba(0,0,0,.35),0 0 0 .5px var(--sep);width:min(620px,100%);padding:18px;display:flex;flex-direction:column;gap:12px;animation:drop .22s ease-out}
+@keyframes drop{from{transform:translateY(-14px);opacity:.6}to{transform:none;opacity:1}}
+@media (prefers-reduced-motion:reduce){.sheet{animation:none}}
+.sheet h2{font:600 15px var(--display);margin:0}
+.sheet textarea{width:100%;min-height:150px;border:0;border-radius:8px;padding:8px 10px;background:var(--fill);font:12px/1.5 var(--mono);resize:vertical}
+.err{color:var(--down);font-size:12px}
+.ok{color:var(--up);font-size:12px}
+
+@media (max-width:1180px){
+  .app{grid-template-columns:220px minmax(0,1fr)}
+  .inspector{grid-column:1/-1;border-left:0;border-top:.5px solid var(--sep);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+}
+@media (max-width:760px){
+  body{padding:0;padding-block:0}
+  .window{border-radius:0}
+  .app{grid-template-columns:minmax(0,1fr)}
+  .sidebar{border-right:0;border-bottom:.5px solid var(--sep);padding:10px 8px}
+  .wl{flex-direction:row;overflow-x:auto;max-height:none;gap:4px;padding-bottom:2px}
+  .wl-item{width:auto;flex:none;grid-template-columns:auto}
+  .wl-item svg{display:none!important}
+  .sb-note{margin:0 4px}
+  .chart-wrap{height:400px}
+  .lights{display:none}
+  .panel{padding:14px 12px}
+}
+@media (min-width:1300px){.wl-item{grid-template-columns:1fr 56px auto}.wl-item svg{display:block;grid-column:2}.wl-item .wchg{grid-column:3;grid-row:1/3}}
+/* v2 additions: engine tables, probability bar, cycle title */
+.cyc-title{padding:10px 16px 0;font:600 13px var(--display);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.cyc-title .muted{font:400 12px var(--sans)}
+.pbar{display:flex;height:30px;border-radius:7px;overflow:hidden;box-shadow:0 0 0 .5px var(--sep)}
+.pbar div{display:grid;place-items:center;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;min-width:0}
+.pbar .b{background:var(--up-soft);color:var(--up)} .pbar .n{background:var(--fill2);color:var(--fg2)} .pbar .s{background:var(--down-soft);color:var(--down)}
+.pbar.sm{height:20px}.pbar.sm div{font-size:10.5px}
+.dot-s{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:1px}
+.layers{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0}
+.formula{font-size:12.5px;padding:10px 14px;border-top:.5px solid var(--sep);background:var(--fill)}
+td.wrap,th.wrap{white-space:normal;text-align:left;min-width:180px}
+td.left,th.left{text-align:left}
+.subtabs{display:flex;gap:4px;padding:8px 14px;border-bottom:.5px solid var(--sep);flex-wrap:wrap}
+.status-big{font:700 19px/1.2 var(--display);letter-spacing:-.01em}
+.ss{display:flex;flex-direction:column;gap:7px;font-size:12.5px;line-height:1.5}
+.ss .row{display:flex;gap:8px;align-items:flex-start}
+.ss .row b{font-weight:600}
+.inspector .field input,.inspector .field select{background:var(--win)}
+.par-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px 10px}
+.par-grid .full{grid-column:1/-1}
+.ins.neutral{background:var(--fill2)} .ins.neutral .dot{background:var(--fg2)}
+/* v3: landscape app window with customisation side menu */
+.window.land{height:calc(100dvh - 44px);min-height:680px;max-width:1680px}
+.app2{flex:1;min-height:0;display:grid;grid-template-columns:292px minmax(0,1fr);transition:grid-template-columns .2s ease}
+.app2.collapsed{grid-template-columns:0 minmax(0,1fr)}
+.app2.collapsed .side{visibility:hidden;padding:0;border:0}
+@media (prefers-reduced-motion:reduce){.app2{transition:none}}
+.side{background:var(--sidebar);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-right:.5px solid var(--sep);overflow-y:auto;overflow-x:hidden;padding:10px 10px 18px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.side .sb-head{padding:8px 6px 2px}
+.side .wl{max-height:232px;overflow-y:auto;margin:6px -4px 4px;flex-direction:column}
+.side .search{margin:0}
+.sec{border-radius:8px}
+.sec>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:6px;padding:7px 6px;font-size:12px;font-weight:600;color:var(--fg2);border-radius:6px;user-select:none}
+.sec>summary::-webkit-details-marker{display:none}
+.sec>summary::before{content:"";width:6px;height:6px;border-right:1.6px solid currentColor;border-bottom:1.6px solid currentColor;transform:rotate(-45deg);transition:transform .15s;margin:0 3px 0 2px}
+.sec[open]>summary::before{transform:rotate(45deg)}
+.sec>summary:hover{background:var(--fill)}
+.sec>summary:focus-visible{outline:3px solid var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.sec-b{background:var(--win);border-radius:9px;box-shadow:0 0 0 .5px var(--sep);padding:10px 12px;margin:2px 0 8px;display:flex;flex-direction:column;gap:9px}
+.swrow{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.swrow>span{display:flex;flex-direction:column;min-width:0}
+.swl{font-size:12.5px}.sws{font-size:11px;color:var(--fg2)}
+input.sw{appearance:none;-webkit-appearance:none;flex:none;width:32px;height:19px;border-radius:10px;background:var(--fill2);position:relative;cursor:pointer;transition:background .15s;margin:0;box-shadow:inset 0 0 0 .5px var(--sep)}
+input.sw::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.3);transition:transform .15s}
+input.sw:checked{background:var(--accent)} input.sw:checked::after{transform:translateX(13px)}
+input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
+.seg.full{display:flex}.seg.full button{flex:1}
+.side .sb-note{margin:6px 0 0}
+.icon-btn{border:0;background:transparent;border-radius:6px;padding:4px 6px;cursor:pointer;color:var(--fg2);display:grid;place-items:center}
+.icon-btn:hover{background:var(--fill2)}
+.icon-btn:focus-visible{outline:3px solid var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+.main2{min-width:0;overflow-y:auto;background:var(--win);display:flex;flex-direction:column}
+.toprow{display:grid;grid-template-columns:minmax(0,1fr) 276px;border-bottom:.5px solid var(--sep)}
+.chartcol{min-width:0;display:flex;flex-direction:column}
+.toprow{height:clamp(460px,calc(100dvh - 250px),720px)}
+.toprow .chart-wrap{flex:1;min-height:0;height:auto}
+.toprow .summary{overflow-y:auto}
+.summary{border-left:.5px solid var(--sep);background:var(--pane);padding:12px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.main2 .tabs{position:sticky;top:0;z-index:4;border-top:0;border-bottom:.5px solid var(--sep)}
+@media (max-width:1180px){.toprow{grid-template-columns:minmax(0,1fr);height:auto}.toprow .chart-wrap{flex:none;height:clamp(380px,56vh,560px)}.toprow .summary{overflow:visible}.summary{border-left:0;border-top:.5px solid var(--sep);display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}}
+@media (max-width:760px){.window.land{height:auto;min-height:0}.app2{grid-template-columns:minmax(0,1fr)}.app2.collapsed{grid-template-columns:minmax(0,1fr)}.app2.collapsed .side{display:none}
+  .side{border-right:0;border-bottom:.5px solid var(--sep);overflow:visible}.main2{overflow:visible}.toprow .chart-wrap{height:400px}.main2 .tabs{position:static}}
+.main2>*{flex-shrink:0}.summary>*{flex-shrink:0}.side>*{flex-shrink:0}
+</style>
+
+<div class="window land" id="win">
+  <header class="titlebar">
+    <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <button class="icon-btn" id="sideToggle" aria-label="Show or hide the customisation menu" aria-controls="side" aria-expanded="true"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 1v12" stroke="currentColor" stroke-width="1.5"/></svg></button>
+    <div class="tb-title">
+      <h1 id="tTicker">BBCA</h1>
+      <span class="px" id="tPrice">–</span>
+      <span class="chg" id="tChg">–</span>
+      <span class="pill neutral" id="tSrc">sample</span>
+    </div>
+    <div class="tb-tools">
+      <div class="seg" role="group" aria-label="Time range">
+        <button data-tf="3M">3M</button><button data-tf="6M">6M</button><button data-tf="1Y">1Y</button><button data-tf="2Y">2Y</button>
+      </div>
+      <button class="btn" id="btnImport">Import CSV…</button>
+    </div>
+  </header>
+
+  <div class="app2" id="appGrid">
+    <aside class="side" id="side" aria-label="Parameters & customisation"></aside>
+    <main class="main2">
+      <div class="toprow">
+        <div class="chartcol">
+          <div class="cyc-title" id="cycTitle"></div>
+          <div class="chart-wrap" id="chartWrap">
+            <canvas id="chart" aria-label="Price chart with analysis overlays and projections"></canvas>
+            <div class="tip" id="tip" hidden></div>
+          </div>
+          <div class="legend" id="legend"></div>
+        </div>
+        <aside class="summary" id="summary" aria-label="Signal summary"></aside>
+      </div>
+      <nav class="tabs">
+        <div class="seg" id="tabSeg" role="tablist" aria-label="Analysis">
+          <button data-tab="struktur">Market Structure</button>
+          <button data-tab="pola">Pattern Analysis</button>
+          <button data-tab="engine">Forecast Engine</button>
+          <button data-tab="forecast">Forecast GBM</button>
+          <button data-tab="fib">Fibonacci &amp; S/R</button>
+          <button data-tab="event">Event Calendar</button>
+          <button data-tab="plan">Plan &amp; Portfolio</button>
+        </div>
+      </nav>
+      <section class="panel" id="panel"></section>
+    </main>
+  </div>
+  <footer class="footer">
+    <span>IDX fees: buy 0.19% · sell 0.29% · 1 lot = 100 shares · prices rounded to IDX tick sizes.</span>
+    <span>Model probabilities — not calibrated forecasts and not investment advice.</span>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="impTitle">
+    <h2 id="impTitle">Import OHLC data</h2>
+    <div class="hint">Recognised columns: <span class="mono">date, open, high, low, close, volume</span>. Comma, semicolon or tab separated. At least 60 daily rows. Import <b>JKSE</b> too so the relative-strength factor uses real data. Data is stored in this browser only.</div>
+    <div class="form">
+      <div class="field"><label for="impTk">Ticker</label><input id="impTk" placeholder="e.g. BBCA" maxlength="8"></div>
+      <div class="field"><label for="impFile">File CSV</label><input id="impFile" type="file" accept=".csv,.txt,text/csv"></div>
+    </div>
+    <textarea id="impText" placeholder="date,open,high,low,close,volume&#10;2026-10-01,7800,7875,7750,7850,81234500&#10;…" aria-label="Paste CSV"></textarea>
+    <div id="impMsg"></div>
+    <div id="impList"></div>
+    <div style="display:flex;justify-content:flex-end;gap:8px">
+      <button class="btn" id="impCancel">Close</button>
+      <button class="btn primary" id="impGo">Import &amp; analyse</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(()=>{
+"use strict";
+const $=s=>document.querySelector(s);
+const FEE_B=0.0019, FEE_S=0.0029;
+const RET=[0,0.236,0.382,0.5,0.618,0.764,1], EXT=[1.272,1.414,1.618,2,2.618];
+const END_DATE='2026-10-12';
+const WATCH=[["JKSE",5900,.011],["ADRO",2400,.028],["AKRA",1250,.022],["AMMN",7500,.034],["AMRT",2300,.022],["ANTM",3000,.03],["ASII",5600,.019],["BBCA",7800,.016],["BBNI",4400,.02],["BBRI",4000,.021],["BMRI",5200,.019],["BREN",7000,.04],["BRIS",2700,.026],["BRPT",1900,.034],["CPIN",4800,.02],["CTRA",950,.025],["EXCL",2300,.022],["GOTO",70,.035],["ICBP",9800,.016],["INDF",7300,.016],["INCO",4000,.03],["INKP",7000,.028],["INTP",6500,.022],["ITMG",24000,.022],["JPFA",1800,.024],["JSMR",4300,.02],["KLBF",1400,.02],["MDKA",2000,.034],["MEDC",1300,.028],["PGAS",1600,.022],["PTBA",2700,.022],["SMGR",3000,.026],["TLKM",3000,.019],["TPIA",7500,.036],["UNTR",26000,.02],["UNVR",1800,.024]];
+const PATS={dtop:"Double Top",dbot:"Double Bottom",ttop:"Triple Top",tbot:"Triple Bottom",hs:"Head & Shoulders",ihs:"Inverse H&S",asc:"Ascending Triangle",desc:"Descending Triangle",sym:"Symmetrical Triangle",rwedge:"Rising Wedge",fwedge:"Falling Wedge",chup:"Ascending Channel",chdn:"Descending Channel",rect:"Rectangle / Sideways",bflag:"Bull Flag",sflag:"Bear Flag",golden:"Golden Cross",death:"Death Cross",bdiv:"Bullish RSI Divergence",sdiv:"Bearish RSI Divergence"};
+const REVERSAL=new Set(['dtop','dbot','ttop','tbot','hs','ihs','bdiv','sdiv']);
+/* Schedules as listed in the user's Macro Pattern & Fibonacci Analyzer v1.4.7 (MSCI.com, Bank Indonesia press releases) */
+const MSCI=[['2026-02-10','2026-02-27','MSCI Feb Review'],['2026-05-12','2026-05-29','MSCI May Review'],['2026-08-12','2026-08-31','MSCI Aug Review'],['2026-11-11','2026-12-01','MSCI Nov Review']];
+const BI=[['2026-01-21','BI Meeting Jan (Quarterly)'],['2026-02-19','BI Meeting Feb'],['2026-03-17','BI Meeting Mar'],['2026-04-22','BI Meeting Apr (Quarterly)'],['2026-05-20','BI Meeting May'],['2026-06-18','BI Meeting Jun'],['2026-07-22','BI Meeting Jul (Quarterly)'],['2026-08-19','BI Meeting Aug'],['2026-09-23','BI Meeting Sep'],['2026-10-21','BI Meeting Oct (Quarterly + Annual)']];
+
+/* ---------- storage ---------- */
+const store={get(k,d){try{const v=localStorage.getItem('its.'+k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem('its.'+k,JSON.stringify(v))}catch(e){}}};
+
+/* ---------- utils ---------- */
+function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+function hash(s){let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619)}return h>>>0}
+function gauss(r){let u=0;while(!u)u=r();return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*r())}
+const tick=p=>p<200?1:p<500?2:p<2000?5:p<5000?10:25;
+function rt(p,m){const t=tick(p);return(m==='up'?Math.ceil(p/t):m==='down'?Math.floor(p/t):Math.round(p/t))*t}
+const mean=a=>a.length?a.reduce((s,x)=>s+x,0)/a.length:0;
+const std=a=>{const m=mean(a);return Math.sqrt(a.reduce((s,x)=>s+(x-m)*(x-m),0)/Math.max(1,a.length-1))};
+const median=a=>{const s=[...a].sort((x,y)=>x-y);return s.length?s[Math.floor(s.length/2)]:0};
+const nf0=new Intl.NumberFormat('en-US',{maximumFractionDigits:0});
+const nf1=new Intl.NumberFormat('en-US',{minimumFractionDigits:1,maximumFractionDigits:1});
+const nf2=new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+let IDX=false;
+const fp=p=>p==null||!isFinite(p)?'–':(IDX||p<200?nf0.format(Math.round(p)):nf0.format(rt(p)));
+const fpc=(x,d=1)=>(x>0?'+':'')+(d===2?nf2:nf1).format(x)+'%';
+const frp=x=>(x<0?'−':'')+'Rp '+nf0.format(Math.abs(Math.round(x)));
+const frpS=x=>(x>0?'+':x<0?'−':'')+'Rp '+nf0.format(Math.abs(Math.round(x)));
+const fs=x=>x==null?'n/a':(x>0?'+':x<0?'−':'')+nf2.format(Math.abs(x));
+const cls=x=>x>0?'up':x<0?'down':'muted';
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function bdaysBack(end,n){const o=[],d=new Date(end+'T00:00:00Z');while(o.length<n){const w=d.getUTCDay();if(w>0&&w<6)o.push(d.toISOString().slice(0,10));d.setUTCDate(d.getUTCDate()-1)}return o.reverse()}
+function bdaysFwd(last,n){const o=[],d=new Date(last+'T00:00:00Z');while(o.length<n){d.setUTCDate(d.getUTCDate()+1);const w=d.getUTCDay();if(w>0&&w<6)o.push(d.toISOString().slice(0,10))}return o}
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const fdate=s=>{const[y,m,d]=s.split('-');return `${MON[+m-1]} ${+d}, ${y.slice(2)}`};
+const dotS=s=>`<span class="dot-s" style="background:${s==null?'var(--fg3)':s>0?'var(--up)':s<0?'var(--down)':'var(--warn)'}"></span>`;
+
+/* ---------- sample data ---------- */
+function genSample(t,base,vol){
+  const R=t==='JKSE'?(p=>Math.round(p)):rt;
+  const r=mulberry32(hash(t)),N=520,raw=[];let p=100,drift=0,left=0;
+  for(let i=0;i<N;i++){if(left--<=0){drift=(r()-0.43)*vol*0.22;left=25+Math.floor(r()*70)}
+    let ret=drift+vol*gauss(r);if(r()<0.012)ret+=(r()-0.5)*vol*7;p*=Math.exp(ret);raw.push(p)}
+  const k=base/raw[N-1],dates=bdaysBack(END_DATE,N),bars=[];
+  for(let i=0;i<N;i++){const c=raw[i]*k,pr=(i?raw[i-1]:raw[0])*k;let o=pr*Math.exp(gauss(r)*vol*.3);
+    let h=Math.max(o,c)*Math.exp(Math.abs(gauss(r))*vol*.45),l=Math.min(o,c)*Math.exp(-Math.abs(gauss(r))*vol*.45);
+    const C=R(c),O=R(o);bars.push({t:dates[i],o:O,c:C,h:Math.max(R===rt?rt(h,'up'):Math.ceil(h),O,C),l:Math.min(R===rt?rt(l,'down'):Math.floor(l),O,C),v:Math.round(2.2e11/base*Math.exp(gauss(r)*.35)*(1+Math.abs(Math.log(c/pr))/vol*.35))})}
+  return bars}
+const DATA={};
+WATCH.forEach(([t,b,v])=>{DATA[t]={bars:genSample(t,b,v),sample:true}});
+let IMPORTED=store.get('imported',{});
+Object.keys(IMPORTED).forEach(t=>{DATA['imp:'+t]={bars:IMPORTED[t],sample:false,name:t}});
+
+/* ---------- CSV ---------- */
+function num(v){v=String(v).trim().replace(/^"|"$/g,'');if(/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(v))v=v.replace(/\./g,'').replace(',','.');else if(/^-?\d+,\d+$/.test(v))v=v.replace(',','.');else v=v.replace(/[^0-9.\-eE]/g,'');return parseFloat(v)}
+function pdate(v){v=String(v).trim().replace(/^"|"$/g,'');if(/^\d{10}$/.test(v))return new Date(+v*1000).toISOString().slice(0,10);if(/^\d{13}$/.test(v))return new Date(+v).toISOString().slice(0,10);
+  let m=v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/);if(m)return `${m[1]}-${m[2].padStart(2,'0')}-${m[3].padStart(2,'0')}`;
+  m=v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/);if(m)return `${m[3]}-${m[2].padStart(2,'0')}-${m[1].padStart(2,'0')}`;
+  const d=new Date(v);return isNaN(d)?null:d.toISOString().slice(0,10)}
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/).filter(x=>x.trim());if(lines.length<2)throw new Error('The CSV is empty or contains only a header.');
+  const h0=lines[0];const sep=h0.includes('\t')?'\t':(h0.split(';').length>h0.split(',').length?';':',');
+  const hd=h0.split(sep).map(x=>x.trim().replace(/^"|"$/g,'').toLowerCase());
+  const f=(re)=>hd.findIndex(x=>re.test(x));
+  const iD=f(/^(date|tanggal|time|timestamp|datetime|tgl)/),iC=hd.indexOf('close')>=0?hd.indexOf('close'):f(/close|penutupan|last|harga/);
+  if(iD<0||iC<0)throw new Error('Date and close columns not found. Headers read: '+hd.join(', '));
+  const iO=f(/^(open|buka|pembukaan)/),iH=f(/^(high|tertinggi)/),iL=f(/^(low|terendah)/),iV=f(/vol/);
+  const bars=[];for(let i=1;i<lines.length;i++){const c=lines[i].split(sep);const t=pdate(c[iD]),C=num(c[iC]);if(!t||!isFinite(C)||C<=0)continue;
+    const O=iO>=0?num(c[iO]):C,H=iH>=0?num(c[iH]):C,L=iL>=0?num(c[iL]):C;bars.push({t,o:isFinite(O)&&O>0?O:C,h:Math.max(isFinite(H)?H:C,C),l:Math.min(isFinite(L)&&L>0?L:C,C),c:C,v:iV>=0?(num(c[iV])||0):0})}
+  bars.sort((a,b)=>a.t<b.t?-1:1);const u=bars.filter((b,i)=>!i||b.t!==bars[i-1].t);
+  if(u.length<60)throw new Error(`Only ${u.length} valid rows; at least 60 trading days are needed.`);return u}
+
+/* ---------- indicators ---------- */
+function ema(a,n){const k=2/(n+1),o=[a[0]];for(let i=1;i<a.length;i++)o.push(a[i]*k+o[i-1]*(1-k));return o}
+function sma(a,n){const o=new Array(a.length).fill(null);let s=0;for(let i=0;i<a.length;i++){s+=a[i];if(i>=n)s-=a[i-n];if(i>=n-1)o[i]=s/n}return o}
+function rsi(c,n=14){const o=new Array(c.length).fill(null);let g=0,l=0;for(let i=1;i<=n&&i<c.length;i++){const d=c[i]-c[i-1];d>0?g+=d:l-=d}g/=n;l/=n;o[n]=100-100/(1+(l?g/l:1e9));
+  for(let i=n+1;i<c.length;i++){const d=c[i]-c[i-1];g=(g*(n-1)+Math.max(d,0))/n;l=(l*(n-1)+Math.max(-d,0))/n;o[i]=100-100/(1+(l?g/l:1e9))}return o}
+function macd(c){const a=ema(c,12),b=ema(c,26),line=a.map((x,i)=>x-b[i]),sig=ema(line,9);return{line,sig,hist:line.map((x,i)=>x-sig[i])}}
+function atr(bars,n=14){const o=[];let a=null;for(let i=0;i<bars.length;i++){const b=bars[i],pc=i?bars[i-1].c:b.c,tr=Math.max(b.h-b.l,Math.abs(b.h-pc),Math.abs(b.l-pc));a=a==null?tr:(a*(n-1)+tr)/n;o.push(a)}return o}
+function pivots(bars,k,from=0){const H=[],L=[];for(let i=Math.max(k,from);i<bars.length-k;i++){let ih=true,il=true;for(let j=i-k;j<=i+k;j++){if(j===i)continue;if(bars[j].h>bars[i].h)ih=false;if(bars[j].l<bars[i].l)il=false}
+  if(ih)H.push({i,p:bars[i].h});if(il)L.push({i,p:bars[i].l})}return{H,L}}
+function fit(pts){const n=pts.length,mx=mean(pts.map(p=>p.i)),my=mean(pts.map(p=>p.p));let sxy=0,sxx=0,syy=0;pts.forEach(p=>{sxy+=(p.i-mx)*(p.p-my);sxx+=(p.i-mx)**2;syy+=(p.p-my)**2});const m=sxx?sxy/sxx:0;const r2=sxx&&syy?(sxy*sxy)/(sxx*syy):0;return{m,b:my-m*mx,r2,at(i){return this.b+this.m*i}}}
+
+/* ---------- analysis ---------- */
+function fibSet(bars,a,b,ovLo,ovHi){let hi=-1,lo=1e18,hiI=a,loI=a;for(let i=a;i<b;i++){if(bars[i].h>hi){hi=bars[i].h;hiI=i}if(bars[i].l<lo){lo=bars[i].l;loI=i}}
+  const auto={lo,hi};if(ovLo>0)lo=ovLo;if(ovHi>0)hi=ovHi;const R=hi-lo;
+  return{lo,hi,loI,hiI,auto,dir:loI<hiI?'up':'down',levels:RET.map(r=>({r,p:lo+r*R})),ext:EXT.map(r=>({r,p:lo+r*R}))}}
+function zonesOf(bars,price,k,tol){const N=bars.length,pv=pivots(bars,k,Math.max(0,N-260));const pts=[...pv.H,...pv.L].sort((a,b)=>a.p-b.p);const Z=[];let cur=null;
+  pts.forEach(p=>{if(cur&&(p.p-cur.lo)/cur.lo<tol){cur.hi=Math.max(cur.hi,p.p);cur.n++;cur.last=Math.max(cur.last,p.i);cur.first=Math.min(cur.first,p.i)}else{cur={lo:p.p,hi:p.p,n:1,last:p.i,first:p.i};Z.push(cur)}});
+  const all=Z.filter(z=>z.n>=3).map(z=>{const m=(z.lo+z.hi)/2;if(z.hi-z.lo<m*0.008){z.lo=m*0.996;z.hi=m*1.004}z.mid=m;z.role=z.hi<price?'S':z.lo>price?'R':'X';return z});
+  const S_=all.filter(z=>z.role==='S').sort((a,b)=>b.hi-a.hi).slice(0,3),R_=all.filter(z=>z.role==='R').sort((a,b)=>a.lo-b.lo).slice(0,3);return[...S_,...all.filter(z=>z.role==='X'),...R_]}
+function trendlines(bars){const N=bars.length,pv=pivots(bars,8);const out={};
+  if(pv.H.length>1){const A=pv.H.reduce((a,b)=>b.p>a.p?b:a);let best=null;pv.H.forEach(p=>{if(p.i-A.i>=15){const s=(p.p-A.p)/(p.i-A.i);if(!best||s>best.s)best={s,p}}});if(best)out.res={i1:A.i,p1:A.p,m:best.s,i2:best.p.i}}
+  if(pv.L.length>1){const A=pv.L.reduce((a,b)=>b.p<a.p?b:a);let best=null;pv.L.forEach(p=>{if(p.i-A.i>=15){const s=(p.p-A.p)/(p.i-A.i);if(!best||s<best.s)best={s,p}}});if(best)out.sup={i1:A.i,p1:A.p,m:best.s,i2:best.p.i}}
+  const last=bars[N-1].c;['res','sup'].forEach(k=>{if(out[k]){const v=out[k].p1+out[k].m*(N-1-out[k].i1);out[k].now=v;if(v<=0||Math.abs(v/last-1)>0.45)delete out[k]}});return out}
+
+/* Macro cycle since the trend high of the last Fibonacci window: resistance through lower peaks, support through the troughs */
+function cycleOf(bars,fib,k){const N=bars.length,last=bars[N-1].c,a=fib.hiI;const pv=pivots(bars,k,a);const H=[{i:a,p:bars[a].h},...pv.H.filter(p=>p.i>a)],L=pv.L.filter(p=>p.i>a);
+  const out={a,hi:bars[a].h,pre:fib.dir==='down'||a>Math.max(0,N-120)?'Bull Market':'Range'};
+  {const pre=bars.slice(Math.max(0,a-120),a+1);const mn=pre.length?Math.min(...pre.map(b=>b.l)):bars[a].l;out.pre=bars[a].h>mn*1.2?'Bull Market':bars[a].h>mn*1.08?'Uptrend':'Range'}
+  if(H.length<2||L.length<2||N-1-a<15){out.structure='Impulse in progress';out.status=last>=bars[a].h*0.98?'AT HIGH':'IMPULSE';return out}
+  const fr=fit(H),fsu=fit(L);out.res=fr;out.sup=fsu;out.resNow=fr.at(N-1);out.supNow=fsu.at(N-1);out.width=out.resNow-out.supNow;
+  const lh=H.slice(1).filter((p,i)=>p.p<H[i].p).length/(H.length-1),ll=L.slice(1).filter((p,i)=>p.p<L[i].p).length/Math.max(1,L.length-1);
+  out.structure=fr.m<0&&fsu.m<0&&lh>=.5?'Descending Staircase':fr.m>0&&fsu.m>0&&lh<.5?'Ascending Staircase':fr.m<0&&fsu.m>0?'Converging Range':'Sideways / Mixed';
+  out.ratio=fr.m?fsu.m/fr.m:0;const w0=fr.at(a)-fsu.at(a);out.shape=out.width<w0*0.85?'CONVERGING WEDGE/TRIANGLE':out.width>w0*1.15?'DIVERGING / BROADENING':'PARALLEL CHANNEL';
+  out.status=last<out.supNow*0.995?'BREAKDOWN':last>out.resNow*1.005?'BREAKOUT':Math.abs(last/out.supNow-1)<0.01?'RETEST SUPPORT':Math.abs(last/out.resNow-1)<0.01?'RETEST RESISTANCE':'IN CHANNEL';
+  return out}
+
+/* Primary pattern: flagpole + consolidation channel inside the last Fibonacci cycle */
+function primaryOf(bars,a,sigma){const N=bars.length;let hiI=a,loI=a;for(let i=a;i<N;i++){if(bars[i].h>bars[hiI].h)hiI=i;if(bars[i].l<bars[loI].l)loI=i}
+  let e=Math.max(hiI,loI),s=Math.min(hiI,loI);if(N-1-e<6){e=s;let o=a;for(let i=a;i<e;i++){if(e===hiI?bars[i].l<bars[o].l:bars[i].h>bars[o].h)o=i}s=o}
+  if(e-s<5||N-1-e<6)return null;const up=e===hiI;
+  const dir=up?'up':'down',from=up?bars[s].l:bars[s].h,to=up?bars[e].h:bars[e].l,ret=(to/from-1)*100;
+  const seg=bars.slice(e).map((b,j)=>({i:e+j,h:b.h,l:b.l}));const fu=fit(seg.map(x=>({i:x.i,p:x.h}))),fl=fit(seg.map(x=>({i:x.i,p:x.l})));
+  const last=bars[N-1].c,pct=v=>v/last*100,flat=0.05;let su=pct(fu.m),sl=pct(fl.m);
+  const w0=fu.at(e)-fl.at(e),w1=fu.at(N-1)-fl.at(N-1),shape=w1>w0*1.15?'Diverging':w1<w0*0.85?'Converging':'Parallel';
+  let U=su,Lo=sl;if(dir==='down'){U=-sl;Lo=-su}
+  const F=x=>Math.abs(x)<flat?0:x>0?1:-1,fu_=F(U),fl_=F(Lo);let name,bias,impl;
+  const M=(u,d)=>dir==='up'?u:d;
+  if(shape==='Parallel'){if(fu_<0&&fl_<0){name=M('Bull Flag','Bear Flag');bias='cont'}else if(fu_>0&&fl_>0){name=M('Rising Channel','Falling Channel');bias='cont'}else{name='Rectangle';bias='cont'}}
+  else if(shape==='Converging'){if(fu_<0&&fl_<0){name=M('Falling Wedge','Rising Wedge');bias='cont'}else if(fu_<=0&&fl_>0&&fu_<0){name='Pennant / Symmetrical Triangle';bias='cont'}else if(fu_===0&&fl_>0){name=M('Ascending Triangle','Descending Triangle');bias='cont'}else if(fu_<0&&fl_===0){name=M('Descending Triangle','Ascending Triangle');bias='rev'}else if(fu_>0&&fl_>0){name=M('Rising Wedge','Falling Wedge');bias='rev'}else{name='Converging Triangle';bias='amb'}}
+  else{const ms=(su+sl)/2;name=`Expanding Triangle (${ms<-flat?'Descending':ms>flat?'Ascending':'Neutral'} Bias)`;bias='amb'}
+  impl=bias==='cont'?`${dir==='up'?'bullish':'bearish'} continuation (after an ${dir==='up'?'up':'down'} flagpole)`:bias==='rev'?`${dir==='up'?'bearish':'bullish'} reversal (against the flagpole)`:`ambiguous / watch both directions (after an ${dir==='up'?'up':'down'} flagpole)`;
+  const pb=bias==='cont'?(dir==='up'?'bull':'bear'):bias==='rev'?(dir==='up'?'bear':'bull'):'neutral';
+  return{s,e,dir,from,to,ret,fu,fl,su:fu.m,sl:fl.m,shape,name,impl,bias:pb,days:N-1-e}}
+
+function detectPatterns(bars,ind,sigma){
+  const N=bars.length,c=bars.map(b=>b.c),last=c[N-1],out=[],from=N-90;const pv=pivots(bars,3,from);const H=pv.H,L=pv.L;
+  const add=(id,bias,note,lines=[],level,neck,span)=>out.push({id,bias,note,lines,level,neck,span});
+  const lowB=(a,b)=>{let m=1e18;for(let i=a;i<=b;i++)m=Math.min(m,bars[i].l);return m},highB=(a,b)=>{let m=-1;for(let i=a;i<=b;i++)m=Math.max(m,bars[i].h);return m};
+  const hl=(i1,i2,p)=>({i1,p1:p,i2,p2:p});const sp=(a,b)=>`${bars[a].t} → ${bars[b].t}`;
+  if(H.length>=3){const t=H.slice(-3),m=mean(t.map(x=>x.p));if(t.every(x=>Math.abs(x.p/m-1)<0.025)&&t[2].i-t[0].i>=10){const nk=lowB(t[0].i,t[2].i);if(nk<m*0.96)add('ttop','bear',`${last<nk?'Neckline already broken.':'Confirmed on a close below the neckline.'}`,[hl(t[0].i,N-1,nk),hl(t[0].i,t[2].i,m)],m,nk,sp(t[0].i,t[2].i))}}
+  if(H.length>=2&&!out.find(x=>x.id==='ttop')){const[a,b]=H.slice(-2),m=(a.p+b.p)/2;if(Math.abs(a.p-b.p)/m<0.025&&b.i-a.i>=5){const nk=lowB(a.i,b.i);if(nk<m*0.96)add('dtop','bear',`${last<nk?'Neckline broken — confirmed.':'Not confirmed until a close below the neckline.'}`,[hl(a.i,N-1,nk),hl(a.i,b.i,m)],m,nk,sp(a.i,b.i))}}
+  if(L.length>=3){const t=L.slice(-3),m=mean(t.map(x=>x.p));if(t.every(x=>Math.abs(x.p/m-1)<0.025)&&t[2].i-t[0].i>=10){const nk=highB(t[0].i,t[2].i);if(nk>m*1.04)add('tbot','bull',`${last>nk?'Neckline breakout has happened.':'Confirmed on a close above the neckline.'}`,[hl(t[0].i,N-1,nk),hl(t[0].i,t[2].i,m)],m,nk,sp(t[0].i,t[2].i))}}
+  if(L.length>=2&&!out.find(x=>x.id==='tbot')){const[a,b]=L.slice(-2),m=(a.p+b.p)/2;if(Math.abs(a.p-b.p)/m<0.025&&b.i-a.i>=5){const nk=highB(a.i,b.i);if(nk>m*1.04)add('dbot','bull',`${last>nk?'Neckline breakout — confirmed.':'Confirmed on a close above the neckline.'}`,[hl(a.i,N-1,nk),hl(a.i,b.i,m)],m,nk,sp(a.i,b.i))}}
+  if(H.length>=3){const[a,b,d]=H.slice(-3);if(b.p>a.p*1.02&&b.p>d.p*1.02&&Math.abs(a.p-d.p)/b.p<0.03){const nk=Math.min(lowB(a.i,b.i),lowB(b.i,d.i));add('hs','bear',`Head ${fp(b.p)}, shoulders ${fp(a.p)} / ${fp(d.p)}. Measured target ${fp(nk-(b.p-nk))} if the neckline breaks.`,[hl(a.i,N-1,nk)],b.p,nk,sp(a.i,d.i))}}
+  if(L.length>=3){const[a,b,d]=L.slice(-3);if(b.p<a.p*0.98&&b.p<d.p*0.98&&Math.abs(a.p-d.p)/b.p<0.03){const nk=Math.max(highB(a.i,b.i),highB(b.i,d.i));add('ihs','bull',`Head ${fp(b.p)}, shoulders ${fp(a.p)} / ${fp(d.p)}. Measured target ${fp(nk+(nk-b.p))} on a breakout.`,[hl(a.i,N-1,nk)],b.p,nk,sp(a.i,d.i))}}
+  const H2=H.filter(p=>p.i>=N-50),L2=L.filter(p=>p.i>=N-50);
+  if(H2.length>=2&&L2.length>=2){const fh=fit(H2),fl=fit(L2),sh=fh.m/last*100,sl=fl.m/last*100,t=0.06;const i0=Math.min(H2[0].i,L2[0].i);
+    const lines=[{i1:i0,p1:fh.at(i0),i2:N-1,p2:fh.at(N-1)},{i1:i0,p1:fl.at(i0),i2:N-1,p2:fl.at(N-1)}];
+    const conv=(fh.at(N-1)-fl.at(N-1))<(fh.at(i0)-fl.at(i0));const d=`Peak slope ${fpc(sh,2)}/day, trough slope ${fpc(sl,2)}/day.`;
+    if(Math.abs(sh)<t&&sl>t)add('asc','bull',`Flat resistance ~${fp(fh.at(N-1))} with higher lows. ${d}`,lines);
+    else if(sh<-t&&Math.abs(sl)<t)add('desc','bear',`Flat support ~${fp(fl.at(N-1))} with lower highs. ${d}`,lines);
+    else if(sh<-t&&sl>t)add('sym','neutral',`Falling peaks and rising troughs, narrowing to ${fp(fh.at(N-1))}–${fp(fl.at(N-1))}. ${d}`,lines);
+    else if(sh>t&&sl>t&&conv)add('rwedge','bear',`Rising but narrowing — momentum is fading. ${d}`,lines);
+    else if(sh<-t&&sl<-t&&conv)add('fwedge','bull',`Falling but narrowing — selling pressure is fading. ${d}`,lines);
+    else if(sh>t&&sl>t)add('chup','bull',`Rising channel ${fp(fl.at(N-1))}–${fp(fh.at(N-1))}. ${d}`,lines);
+    else if(sh<-t&&sl<-t)add('chdn','bear',`Falling channel ${fp(fl.at(N-1))}–${fp(fh.at(N-1))}. ${d}`,lines);
+    else if(Math.abs(sh)<t&&Math.abs(sl)<t)add('rect','neutral',`Consolidation ${fp(fl.at(N-1))}–${fp(fh.at(N-1))}. Wait for a breakout on volume.`,lines)}
+  const poleMin=Math.max(0.07,3*sigma*Math.sqrt(10));
+  for(let j=N-16;j<=N-5;j++){if(j<11)continue;const up=c[j]/c[j-10]-1;let mx=-1,mn=1e18;for(let i=j;i<N;i++){mx=Math.max(mx,bars[i].h);mn=Math.min(mn,bars[i].l)}
+    if(up>poleMin&&mx<=bars[j].h*1.01&&(c[j]-mn)/(c[j]-c[j-10])<0.5&&last<c[j]){add('bflag','bull',`Pole up ${fpc(up*100)} in 10 days, then a shallow consolidation. A breakout above ${fp(mx)} continues the trend.`,[hl(j,N-1,mx),hl(j,N-1,mn)]);break}
+    if(-up>poleMin&&mn>=bars[j].l*0.99&&(mx-c[j])/(c[j-10]-c[j])<0.5&&last>c[j]){add('sflag','bear',`Pole down ${fpc(up*100)}, then a weak bounce. A breakdown below ${fp(mn)} continues the downtrend.`,[hl(j,N-1,mx),hl(j,N-1,mn)]);break}}
+  for(let i=N-10;i<N;i++){if(ind.e20[i-1]<=ind.e50[i-1]&&ind.e20[i]>ind.e50[i])add('golden','bull',`EMA20 crossed above EMA50 on ${fdate(bars[i].t)}.`);
+    if(ind.e20[i-1]>=ind.e50[i-1]&&ind.e20[i]<ind.e50[i])add('death','bear',`EMA20 crossed below EMA50 on ${fdate(bars[i].t)}.`)}
+  const H6=H.filter(p=>p.i>=N-60),L6=L.filter(p=>p.i>=N-60),r=ind.r;
+  if(H6.length>=2){const[a,b]=H6.slice(-2);if(b.p>a.p&&r[b.i]<r[a.i]-3)add('sdiv','bear',`Price made a higher high (${fp(a.p)} → ${fp(b.p)}) but RSI fell (${nf0.format(r[a.i])} → ${nf0.format(r[b.i])}).`,[{i1:a.i,p1:a.p,i2:b.i,p2:b.p}],b.p,null,sp(a.i,b.i))}
+  if(L6.length>=2){const[a,b]=L6.slice(-2);if(b.p<a.p&&r[b.i]>r[a.i]+3)add('bdiv','bull',`Price made a lower low (${fp(a.p)} → ${fp(b.p)}) but RSI rose (${nf0.format(r[a.i])} → ${nf0.format(r[b.i])}).`,[{i1:a.i,p1:a.p,i2:b.i,p2:b.p}],b.p,null,sp(a.i,b.i))}
+  return out}
+
+function analyze(key){
+  const d=DATA[key],bars=d.bars,N=bars.length,c=bars.map(b=>b.c),last=c[N-1];IDX=label(key)==='JKSE';
+  const e20=ema(c,20),e50=ema(c,50),s20=sma(c,20),s50=sma(c,50),s200=sma(c,200),r=rsi(c),m=macd(c),at=atr(bars);
+  const lr=[];for(let i=1;i<N;i++)lr.push(Math.log(c[i]/c[i-1]));
+  const w=lr.slice(-120),mu=mean(w),sigma=std(w),sig250=std(lr.slice(-250));
+  const ov=(S.swing[key]||{}),P=S.par;
+  const fibS=fibSet(bars,Math.max(0,N-120),N,ov.sLo,ov.sHi),fibM=fibSet(bars,0,N,ov.mLo,ov.mHi);
+  const zones=zonesOf(bars,last,Math.max(2,Math.round(P.pivot*0.7)),P.tol/100),tl=trendlines(bars),pats=detectPatterns(bars,{e20,e50,r},sigma);
+  const cyc=cycleOf(bars,fibS,P.pivot),prim=primaryOf(bars,Math.max(0,N-120),sigma);
+  const y=bars.slice(-250);const hi52=Math.max(...y.map(b=>b.h)),lo52=Math.min(...y.map(b=>b.l));
+  const di={};bars.forEach((b,i)=>di[b.t]=i);
+  return{key,bars,N,c,last,prev:c[N-2],e20,e50,s20,s50,s200,r,m,at,mu,sigma,sig250,fibS,fibM,zones,tl,pats,cyc,prim,hi52,lo52,di}}
+
+/* ---------- forecast engine: regime → technical → fundamental → probabilities ---------- */
+const MAC_DEF={jRet63:-2.3,j50:'no',j200:'no',breadth:30,jVol:1.23,jRet5:-4.7,jRv:0.97,bi:5.75,biExp:0,fed:3.88,fedChg:0.24,us10:5.24,us10Chg:0.66,id10:'',id10Chg:'',fx:-0.67,glob:0.67,flow:''};
+let MAC=Object.assign({},MAC_DEF,store.get('macro',{}));
+let FUND=store.get('fund',{});
+const isNum=v=>v!==''&&v!=null&&isFinite(+v);
+function grp(f){const v=f.filter(x=>x.s!=null).map(x=>x.s);return v.length?mean(v):null}
+function layerRegime(A){const M=MAC,f=[];const add=(g,n,l,s,r)=>f.push({g,n,l,s,r});
+  const jt=mean([M.jRet63>3?1:M.jRet63<-3?-1:0,M.j50==='yes'?1:-1,M.j200==='yes'?1:-1]);
+  add('Domestic market','JCI trend',`63d ${fpc(+M.jRet63)}; above SMA50: ${M.j50==='yes'?'yes':'no'}; above SMA200: ${M.j200==='yes'?'yes':'no'}`,jt,'mean of: 63d return beyond ±3%, vs SMA50, vs SMA200');
+  add('Domestic market','Market breadth',`${nf0.format(+M.breadth)}% of names above 20DMA`,+M.breadth>60?1:+M.breadth<40?-1:0,'>60% above 20DMA = +1, <40% = −1');
+  add('Domestic market','JCI volume',`5d/20d ${nf2.format(+M.jVol)}x; JCI 5d ${fpc(+M.jRet5)}`,+M.jVol>1.15?(+M.jRet5>=0?1:-1):0,'5d/20d > 1.15x: volume expansion in the direction of the 5d return');
+  add('Domestic market','JCI volatility',`20d vs 1y median ratio ${nf2.format(+M.jRv)}x`,+M.jRv>1.3?-1:+M.jRv<0.8?1:0,'ratio > 1.3x = −1 (stress), < 0.8x = +1');
+  add('Rates & policy','BI Rate (level)',`${nf2.format(+M.bi)}%`,null,'context only; not scored');
+  add('Rates & policy','BI Rate expectation',`${+M.biExp>0?'+':''}${nf0.format(+M.biExp)} bps over ~6 months`,+M.biExp<=-25?1:+M.biExp>=25?-1:0,'≤ −25bps = +1, ≥ +25bps = −1');
+  add('Rates & policy','Fed Funds Rate',`${nf2.format(+M.fed)}% (6M ${+M.fedChg>0?'+':''}${nf2.format(+M.fedChg)}pp)`,+M.fedChg>=0.25?-1:+M.fedChg<=-0.25?1:0,'6M change ≥ +0.25pp = −1, ≤ −0.25pp = +1');
+  add('Rates & policy','US Treasury 10Y',`${nf2.format(+M.us10)}% (3M ${+M.us10Chg>0?'+':''}${nf2.format(+M.us10Chg)}pp)`,+M.us10Chg>=0.3?-1:+M.us10Chg<=-0.3?1:0,'3M change ≥ +0.30pp = −1, ≤ −0.30pp = +1');
+  add('Rates & policy','Indonesia 10Y',isNum(M.id10)?`${nf2.format(+M.id10)}%${isNum(M.id10Chg)?` (3M ${+M.id10Chg>0?'+':''}${nf2.format(+M.id10Chg)}pp)`:''}`:'n/a (enter manually)',isNum(M.id10Chg)?(+M.id10Chg>=0.3?-1:+M.id10Chg<=-0.3?1:0):null,'3M change ≥ +0.30pp = −1, ≤ −0.30pp = +1');
+  add('Rates & policy','Yield spread (ID10Y − UST10Y)',isNum(M.id10)?`${nf2.format(M.id10-M.us10)}pp`:'n/a',isNum(M.id10)?(M.id10-M.us10<2?-1:M.id10-M.us10>3.5?1:0):null,'< 2.0pp = −1 (thin compensation), > 3.5pp = +1');
+  add('FX & dollar','USD/IDR · DXY (manual score)','score from input',isNum(M.fx)?+M.fx:null,'−1 = rupiah under pressure / dollar strong, +1 = the reverse');
+  add('Global risk','Global risk appetite (manual score)','score from input',isNum(M.glob)?+M.glob:null,'−1 = global risk-off, +1 = risk-on');
+  const N=A.N,c=A.c,r20=(c[N-1]/c[N-21]-1)*100,r5=(c[N-1]/c[N-6]-1)*100,v5=mean(A.bars.slice(-5).map(b=>b.v)),v20=mean(A.bars.slice(-20).map(b=>b.v)),vr=v20?v5/v20:1;
+  add('Price, volume & foreign flow','Price trend 20d',`${fpc(r20)}`,r20>2?1:r20<-2?-1:0,'20d return > +2% = +1, < −2% = −1');
+  add('Price, volume & foreign flow','Stock volume',`5d/20d ${nf2.format(vr)}x; 5d ${fpc(r5)}`,vr>1.15?(r5>=0?1:-1):0,'5d/20d > 1.15x: volume expansion in the direction of the 5d return');
+  add('Price, volume & foreign flow','Foreign flow (manual score)',isNum(M.flow)?'score from input':'n/a (fill from IDX-API)',isNum(M.flow)?+M.flow:null,'20-session foreign net flow: +1 net buy, −1 net sell');
+  const G=['Domestic market','Rates & policy','FX & dollar','Global risk','Price, volume & foreign flow'].map(g=>({g,s:grp(f.filter(x=>x.g===g))}));
+  return{f,G,s:grp(G.map(x=>({s:x.s})))}}
+function layerTech(A){const N=A.N,c=A.c,f=[],last=A.last;const add=(n,l,s,r)=>f.push({g:'Technical',n,l,s,r});
+  const R=A.r[N-1];add('RSI 14',nf1.format(R),R>70?-1:R<30?1:R>=50?0.5:-0.5,'>70 = −1, <30 = +1, 50–70 = +0.5, 30–50 = −0.5');
+  const h=A.m.hist[N-1];add('MACD 12·26·9',`hist ${h>0?'positive':'negative'}, ${h>A.m.hist[N-2]?'rising':'falling'}`,(h>0?0.5:-0.5)+(h>A.m.hist[N-2]?0.5:-0.5),'histogram sign ±0.5 + direction ±0.5');
+  const ma=[last>A.s50[N-1]?1:-1,A.s20[N-1]>A.s50[N-1]?1:-1];if(A.s200[N-1]!=null)ma.push(last>A.s200[N-1]?1:-1);
+  add('Moving average',`SMA50 ${fp(A.s50[N-1])}${A.s200[N-1]!=null?` · SMA200 ${fp(A.s200[N-1])}`:''}`,mean(ma),'mean of: price vs SMA50, SMA20 vs SMA50, price vs SMA200');
+  const ap=A.at.map((v,i)=>v/c[i]);const ar=ap[N-1]/median(ap.slice(-250));add('ATR 14',`${fp(A.at[N-1])} (${nf1.format(ap[N-1]*100)}% of price, ${nf2.format(ar)}x 1y median)`,ar>1.3?-1:ar<0.8?1:0,'> 1.3x median = −1 (stress), < 0.8x = +1');
+  const sd20=std(c.slice(-20)),pb=(last-(A.s20[N-1]-2*sd20))/(4*sd20||1);add('Bollinger %B (20,2)',nf2.format(pb),pb>1?-1:pb<0?1:pb>0.5?0.5:-0.5,'>1 = −1 (stretched), <0 = +1, above middle +0.5, below −0.5');
+  const jk=DATA['imp:JKSE']||DATA.JKSE;if(label(A.key)!=='JKSE'&&jk&&jk.bars.length>64){const jb=jk.bars,jr=(jb[jb.length-1].c/jb[jb.length-64].c-1)*100,sr=(last/c[Math.max(0,N-64)]-1)*100,d=sr-jr;
+    add('Relative strength vs JKSE',`63d ${fpc(sr)} vs JKSE ${fpc(jr)}${DATA['imp:JKSE']?'':' (sample JKSE)'}`,d>3?1:d<-3?-1:0,'gap > +3pp = +1, < −3pp = −1')}
+  else add('Relative strength vs JKSE','n/a',null,'needs JKSE data; not applicable to the index');
+  return{f,s:grp(f)}}
+function layerFund(A){const t=label(A.key),F=FUND[t]||{},f=[];const add=(n,k,fmt,rule,sc)=>{const v=F[k];f.push({g:'Fundamental',n,k,l:isNum(v)?fmt(+v):'n/a',s:isNum(v)?sc(+v):null,r:rule})};
+  add('EPS growth YoY','eps',v=>fpc(v),'> 10% = +1, < 0% = −1',v=>v>10?1:v<0?-1:0);
+  add('ROE','roe',v=>nf1.format(v)+'%','> 15% = +1, < 8% = −1',v=>v>15?1:v<8?-1:0);
+  add('PBV','pbv',v=>nf2.format(v)+'x','< 1x = +1, > 4x = −1 (bank premiums are normal)',v=>v<1?1:v>4?-1:0);
+  add('PER','per',v=>nf1.format(v)+'x','< 10x = +1, > 25x = −1',v=>v<10?1:v>25?-1:0);
+  add('Dividend yield','dy',v=>nf1.format(v)+'%','> 4% = +1, < 1,5% = −1',v=>v>4?1:v<1.5?-1:0);
+  return{f,s:grp(f)}}
+function engine(A){const P=S.par,H=P.weeks*5,reg=layerRegime(A),tech=layerTech(A),fund=layerFund(A);
+  const L=[['Market regime',reg.s,P.wR],['Technical',tech.s,P.wT],['Fundamental',fund.s,P.wF]].filter(x=>x[1]!=null&&x[2]>0);const W=L.reduce((s,x)=>s+x[2],0);
+  const comb=W?L.reduce((s,x)=>s+x[1]*x[2],0)/W:0;
+  const c=A.c,N=A.N,lr=[];for(let i=Math.max(1,N-250);i<N;i++)lr.push(Math.log(c[i]/c[i-1]));const m=mean(lr),sd=std(lr),dm=lr.map(x=>x-m);
+  const sH=sd*Math.sqrt(H),band=P.band*sH,shift=comb*0.5*sH*(P.tilt/100),sd_=shift/H,S0=A.last;
+  const Pn=4000,rng=mulberry32(hash(A.key+'|'+H)),cum=new Float32Array(Pn*H),fin=new Float64Array(Pn);
+  for(let p=0;p<Pn;p++){let x=0;for(let i=0;i<H;i++){x+=dm[Math.floor(rng()*dm.length)]+sd_;cum[p*H+i]=x}fin[p]=x}
+  const st=x=>x>band?0:x<-band?2:1,cnt=[0,0,0],base=[0,0,0],idx=[[],[],[]];for(let p=0;p<Pn;p++){const s=st(fin[p]);cnt[s]++;idx[s].push(p);base[st(fin[p]-shift)]++}
+  const prob=cnt.map(x=>x/Pn),pbase=base.map(x=>x/Pn);
+  const q=(arr,f)=>arr[Math.min(arr.length-1,Math.floor(f*(arr.length-1)))];
+  const scen=[0,1,2].map(s=>{const v=idx[s].map(p=>S0*Math.exp(fin[p])).sort((a,b)=>a-b);let path=null;
+    if(idx[s].length>=20){path=[];const col=new Float64Array(idx[s].length);for(let i=0;i<H;i++){idx[s].forEach((p,j)=>col[j]=cum[p*H+i]);const so=Array.from(col).sort((a,b)=>a-b);path.push(S0*Math.exp(so[Math.floor(so.length/2)]))}}
+    return{p:prob[s],pb:pbase[s],med:v.length?q(v,.5):null,p25:v.length?q(v,.25):null,p75:v.length?q(v,.75):null,path}});
+  const wpath=[];for(let i=0;i<H;i++){let s=0,w=0;scen.forEach(x=>{if(x.path){s+=x.p*x.path[i];w+=x.p}});wpath.push(w?s/w:S0)}
+  const all=Array.from(fin).map(x=>S0*Math.exp(x)).sort((a,b)=>a-b);
+  const atrV=A.at[N-1];const f618=A.fibS.levels.find(l=>l.r===0.618).p,f0=A.fibS.lo;
+  return{H,reg,tech,fund,L,W,comb,sd,sH,band,shift,scen,wpath,up:S0*Math.exp(band),dn:S0*Math.exp(-band),all:{med:q(all,.5),mean:mean(all),p10:q(all,.1),p90:q(all,.9)},
+    atr:atrV,atrH:atrV*Math.sqrt(H),p618:all.filter(x=>x>=f618).length/Pn,pf0:all.filter(x=>x<=f0).length/Pn,f618,f0}}
+
+/* ---------- GBM forecast ---------- */
+function forecast(A,o,H){
+  const S0=A.last,n=H,sigma=o.volOv>0?o.volOv/100:A.sigma,mu=o.drift==='hist'?A.mu:o.drift==='zero'?0:Math.log(1+o.ann/100)/250;
+  const dates=bdaysFwd(A.bars[A.N-1].t,n);let ev=-1;if(o.evDate){ev=dates.findIndex(d=>d>=o.evDate)}
+  const vols=[],rows=[];let cv=0;for(let i=0;i<n;i++){const v=ev>=0&&i>=ev?sigma*o.evF:sigma;vols.push(v);cv+=v*v;const sd=Math.sqrt(cv),mm=mu*(i+1);
+    rows.push({d:dates[i],exp:S0*Math.exp(mm),l1:S0*Math.exp(mm-sd),h1:S0*Math.exp(mm+sd),l2:S0*Math.exp(mm-2*sd),h2:S0*Math.exp(mm+2*sd)})}
+  const T=o.target>0?o.target:null,St=o.stop>0?o.stop:null,P=3000,rng=mulberry32(hash(A.key+n+sigma.toFixed(5)+mu.toFixed(6)+(o.evDate||''))),fin=new Float64Array(P),paths=[];let hT=0,hS=0;
+  for(let p=0;p<P;p++){let x=S0,t=false,s=false;const keep=p<36?[]:null;for(let i=0;i<n;i++){x*=Math.exp(mu+vols[i]*gauss(rng));if(T&&!t&&!s&&x>=T){t=true}if(St&&!s&&!t&&x<=St){s=true}if(keep)keep.push(x)}
+    fin[p]=x;if(t)hT++;if(s)hS++;if(keep)paths.push(keep)}
+  const sorted=Array.from(fin).sort((a,b)=>a-b),q=f=>sorted[Math.floor(f*(P-1))];
+  return{rows,mu,sigma,paths,T,St,pT:hT/P,pS:hS/P,q5:q(.05),q50:q(.5),q95:q(.95),pUp:sorted.filter(x=>x>S0).length/P,sorted,ev}}
+
+/* ---------- trade plan ---------- */
+function plan(A){
+  const p=A.last;const sup=[],res=[];
+  A.fibS.levels.forEach(l=>(l.p<p*0.985?sup:l.p>p*1.02?res:[]).push({p:l.p,src:`Cycle Fib ${nf1.format(l.r*100)}%`}));
+  A.fibM.levels.forEach(l=>(l.p<p*0.985?sup:l.p>p*1.02?res:[]).push({p:l.p,src:`Macro Fib ${nf1.format(l.r*100)}%`}));
+  A.fibS.ext.forEach(l=>{if(l.p>p*1.02)res.push({p:l.p,src:`Extension ${nf1.format(l.r*100)}%`,asp:l.p>A.fibM.hi})});
+  A.zones.forEach(z=>{if(z.role==='S'&&z.lo<p*0.985)sup.push({p:z.lo,src:`Support zone (${z.n} touches)`});if(z.role==='R'&&z.hi>p*1.02)res.push({p:z.mid,src:`Resistance zone (${z.n} touches)`})});
+  if(A.cyc.supNow&&A.cyc.supNow<p*0.985)sup.push({p:A.cyc.supNow,src:'Cycle support trendline'});if(A.cyc.resNow&&A.cyc.resNow>p*1.02)res.push({p:A.cyc.resNow,src:'Cycle resistance trendline'});
+  sup.sort((a,b)=>b.p-a.p);res.sort((a,b)=>a.p-b.p);
+  const s=sup[0]||{p:p*0.92,src:'Default −8% (no structural support)'};const cl=rt(s.p*0.99,'down');
+  const tps=[];res.forEach(r=>{if(tps.length<3&&(!tps.length||r.p>tps[tps.length-1].p*1.025))tps.push(r)});
+  while(tps.length<3){const b=tps.length?tps[tps.length-1].p:p;tps.push({p:b*1.06,src:'+6% (no further level)'})}
+  tps.forEach(t=>t.p=rt(t.p));return{sup:s,cl,tps,sups:sup.slice(0,4),ress:res.slice(0,4)}}
+const modal=(e,lot)=>e*lot*100*(1+FEE_B);
+const bep=(e,lot)=>modal(e,lot)/(lot*100*(1-FEE_S));
+const pnl=(e,x,lot)=>x*lot*100*(1-FEE_S)-modal(e,lot);
+
+/* ---------- state ---------- */
+const OV_DEF={ema:true,fibS:true,fibM:false,zones:true,trend:false,cyc:true,pat:false,scn:true,fc:false,mc:false,ev:true,vol:true};
+const PAR_DEF={weeks:16,pivot:6,tol:1.8,tilt:50,band:0.5,wR:40,wT:35,wF:25,bep:0};
+const FC_DEF={drift:'hist',ann:8,volOv:0,evDate:'',evF:1.15,target:0,stop:0};
+const saved=store.get('ui2en',{});
+const S={ticker:saved.ticker||'BBCA',tf:saved.tf&&TF[saved.tf]?saved.tf:'6M',tab:saved.tab||'struktur',ov:Object.assign({},OV_DEF,saved.ov),par:Object.assign({},PAR_DEF,saved.par),fc:Object.assign({},FC_DEF,saved.fc),swing:saved.swing||{},etab:saved.etab||'reg',q:'',sec:saved.sec||{},collapsed:!!saved.collapsed};
+let POS=store.get('pos',[{t:'BBCA',lot:150,entry:6375,px:0},{t:'BBRI',lot:60,entry:2848,px:0}]);
+let DIV=store.get('div',{}),CEV=store.get('cev',[]);
+if(!DATA[S.ticker])S.ticker='BBCA';
+let A=null,F=null,PL=null,E=null,hover=null;
+const save=()=>store.set('ui2en',{ticker:S.ticker,tf:S.tf,tab:S.tab,ov:S.ov,par:S.par,fc:S.fc,swing:S.swing,etab:S.etab,sec:S.sec,collapsed:S.collapsed});
+function label(k){return k.startsWith('imp:')?k.slice(4):k}
+const keyFor=t=>DATA['imp:'+t]?'imp:'+t:DATA[t]?t:null;
+function events(){const t=label(S.ticker),o=[];MSCI.forEach(([a,e,n])=>o.push({d:e,k:'msci',t:n+' (effective)'}));BI.forEach(([d,n])=>o.push({d,k:'bi',t:n}));
+  (DIV[t]||[]).forEach(x=>o.push({d:x.d,k:'div',t:`Ex-dividend ${t} Rp ${nf1.format(x.amt)}`}));CEV.forEach(x=>o.push({d:x.d,k:'cus',t:x.t}));return o.sort((a,b)=>a.d<b.d?-1:1)}
+
+function recompute(){A=analyze(S.ticker);PL=plan(A);E=engine(A);const o=Object.assign({},S.fc);if(!(o.target>0))o.target=PL.tps[0].p;if(!(o.stop>0))o.stop=PL.cl;F=forecast(A,o,E.H)}
+
+/* ---------- colors ---------- */
+let C={};function readColors(){const cs=getComputedStyle(document.documentElement),g=n=>cs.getPropertyValue(n).trim();
+  C={fg:g('--fg'),fg2:g('--fg2'),fg3:g('--fg3'),sep:g('--sep'),up:g('--up'),down:g('--down'),acc:g('--accent'),gold:g('--gold'),warn:g('--warn'),vio:g('--violet'),fan1:g('--fan1'),fan2:g('--fan2'),zs:g('--zone-s'),zr:g('--zone-r'),win:g('--win'),fill:g('--fill2')}}
+
+/* ---------- chart ---------- */
+const TF={'3M':63,'6M':126,'1Y':250,'2Y':500};let G=null;
+function niceTicks(lo,hi,n){const span=hi-lo,step0=span/n,mag=Math.pow(10,Math.floor(Math.log10(step0))),f=step0/mag,step=(f<1.5?1:f<3?2:f<7?5:10)*mag,o=[];for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)o.push(v);return o}
+function drawChart(){
+  const cv=$('#chart'),wrap=$('#chartWrap'),W=wrap.clientWidth,Hh=wrap.clientHeight,dpr=window.devicePixelRatio||1;if(!W)return;
+  cv.width=W*dpr;cv.height=Hh*dpr;const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,Hh);
+  const ff=getComputedStyle(document.body).fontFamily;
+  const bars=A.bars,N=A.N,s=Math.max(0,N-TF[S.tf]),Fn=(S.ov.fc||S.ov.scn||S.ov.mc)?E.H:0,slots=N-s+Fn;
+  const padL=6,padR=62,top=8,showMacd=Hh>=420,gap=20;const subH=showMacd?Math.round(Hh*.13):Math.round(Hh*.16);
+  const ph=Hh-top-18-(showMacd?2:1)*(subH+gap);const rTop=top+ph+gap,mTop=rTop+subH+gap;const pw=W-padL-padR,bw=pw/slots;
+  const X=i=>padL+(i-s+.5)*bw;
+  let lo=1e18,hi=-1;for(let i=s;i<N;i++){lo=Math.min(lo,bars[i].l);hi=Math.max(hi,bars[i].h)}
+  if(Fn&&S.ov.fc)F.rows.forEach(r=>{lo=Math.min(lo,r.l2);hi=Math.max(hi,r.h2)});
+  if(Fn&&S.ov.scn)E.scen.forEach(sc=>sc.path&&sc.path.forEach(v=>{lo=Math.min(lo,v);hi=Math.max(hi,v)}));
+  const pad=(hi-lo)*.05;lo-=pad;hi+=pad;
+  const Y=p=>top+(hi-p)/(hi-lo)*ph;
+  x.font='11px '+ff;x.textBaseline='middle';
+  const ticks=niceTicks(lo,hi,6);x.strokeStyle=C.sep;x.lineWidth=1;x.fillStyle=C.fg2;x.textAlign='left';
+  ticks.forEach(v=>{const yy=Math.round(Y(v))+.5;x.beginPath();x.moveTo(padL,yy);x.lineTo(W-padR,yy);x.stroke();x.fillText(fp(v),W-padR+6,yy)});
+  const bottomY=showMacd?mTop+subH:rTop+subH;
+  // events
+  if(S.ov.ev){const fd=Fn?F.rows.map(r=>r.d):[];const all=events();x.save();x.font='10px '+ff;
+    all.forEach(ev=>{let i=null;if(ev.d<=bars[N-1].t){if(ev.d<bars[s].t)return;i=A.di[ev.d];if(i==null){i=bars.findIndex(b=>b.t>=ev.d)}}else if(Fn){const j=fd.findIndex(d=>d>=ev.d);if(j<0)return;i=N+j}else return;
+      const col=ev.k==='msci'?C.vio:ev.k==='bi'?C.acc:ev.k==='div'?C.up:C.warn;const xx=Math.round(X(i))+.5;x.strokeStyle=col;x.globalAlpha=.55;x.setLineDash([2,4]);x.beginPath();x.moveTo(xx,top);x.lineTo(xx,top+ph);x.stroke();
+      x.globalAlpha=.9;x.fillStyle=col;x.save();x.translate(xx-3,top+6);x.rotate(Math.PI/2);x.textAlign='left';x.fillText(ev.k==='msci'?'MSCI':ev.k==='bi'?'BI':ev.k==='div'?'Ex-div':ev.t.slice(0,14),0,0);x.restore()});x.restore()}
+  if(Fn){const xd=Math.round(X(N-.5))+.5;x.save();x.setLineDash([2,3]);x.strokeStyle=C.fg3;x.beginPath();x.moveTo(xd,top);x.lineTo(xd,bottomY);x.stroke();x.restore();
+    x.fillStyle=C.fg2;x.textAlign='right';x.fillText('HISTORICAL',xd-6,top+8);x.textAlign='left';x.fillText(`PROJECTION ${E.H} trading days`,xd+6,top+8)}
+  x.save();x.beginPath();x.rect(padL,top,pw,ph);x.clip();
+  if(S.ov.zones)A.zones.filter(z=>z.hi>lo&&z.lo<hi).forEach(z=>{x.fillStyle=z.role==='S'?C.zs:z.role==='R'?C.zr:C.fill;x.fillRect(padL,Y(z.hi),pw,Math.max(2,Y(z.lo)-Y(z.hi)))});
+  const drawFib=(f,col,tag,dash)=>{x.save();x.setLineDash(dash);x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1;x.textAlign='left';
+    [...f.levels,...f.ext].forEach(l=>{if(l.p<lo||l.p>hi)return;const yy=Math.round(Y(l.p))+.5;x.globalAlpha=l.r===0.618||l.r===0.5?.95:.6;x.beginPath();x.moveTo(padL,yy);x.lineTo(padL+pw,yy);x.stroke();x.globalAlpha=1;x.fillText(`${tag} ${nf1.format(l.r*100)}%  ${fp(l.p)}`,padL+4,yy-7)});x.restore()};
+  if(S.ov.fibM)drawFib(A.fibM,C.vio,'M',[6,4]);if(S.ov.fibS)drawFib(A.fibS,C.gold,'Fibo',[3,3]);
+  if(S.ov.trend)[['res',C.down],['sup',C.up]].forEach(([k,col])=>{const t=A.tl[k];if(!t)return;const i2=N-1+Fn;x.save();x.strokeStyle=col;x.lineWidth=1.4;x.globalAlpha=.85;x.beginPath();x.moveTo(X(Math.max(s,t.i1)),Y(t.p1+t.m*(Math.max(s,t.i1)-t.i1)));x.lineTo(X(i2),Y(t.p1+t.m*(i2-t.i1)));x.stroke();x.restore()});
+  if(S.ov.cyc&&A.cyc.res){const a=Math.max(s,A.cyc.a),i2=N-1+Math.min(Fn,20);[[A.cyc.res,C.down],[A.cyc.sup,C.up]].forEach(([f,col])=>{x.save();x.strokeStyle=col;x.lineWidth=1.8;x.beginPath();x.moveTo(X(a),Y(f.at(a)));x.lineTo(X(i2),Y(f.at(i2)));x.stroke();x.restore()})}
+  if(S.ov.vol){let vm=0;for(let i=s;i<N;i++)vm=Math.max(vm,bars[i].v);if(vm>0){const vh=ph*.16;for(let i=s;i<N;i++){const b=bars[i],h=b.v/vm*vh;x.fillStyle=b.c>=b.o?C.up:C.down;x.globalAlpha=.18;x.fillRect(X(i)-bw*.36,top+ph-h,Math.max(1,bw*.72),h)}x.globalAlpha=1}}
+  const x0=X(N-1),y0=Y(A.last);
+  if(Fn&&S.ov.fc){const r=F.rows;const band=(a,b,col)=>{x.beginPath();x.moveTo(x0,y0);r.forEach((q,i)=>x.lineTo(X(N+i),Y(q[a])));for(let i=r.length-1;i>=0;i--)x.lineTo(X(N+i),Y(r[i][b]));x.closePath();x.fillStyle=col;x.fill()};
+    band('h2','l2',C.fan2);band('h1','l1',C.fan1);
+    x.save();x.setLineDash([5,4]);x.strokeStyle=C.acc;x.lineWidth=1.4;x.beginPath();x.moveTo(x0,y0);r.forEach((q,i)=>x.lineTo(X(N+i),Y(q.exp)));x.stroke();x.restore();
+    const L=r[r.length-1];x.fillStyle=C.acc;x.textAlign='right';[['h2','+2σ'],['h1','+1σ'],['l1','−1σ'],['l2','−2σ']].forEach(([k,t])=>x.fillText(t,X(N+r.length-1)-4,Y(L[k])))}
+  if(Fn&&S.ov.mc){x.save();x.globalAlpha=.3;x.lineWidth=1;F.paths.forEach(p=>{x.strokeStyle=p[p.length-1]>=A.last?C.up:C.down;x.beginPath();x.moveTo(x0,y0);p.forEach((v,i)=>x.lineTo(X(N+i),Y(v)));x.stroke()});x.restore()}
+  if(Fn&&S.ov.scn){const sty=[[C.up,[],2],[C.fg2,[2,3],1.6],[C.down,[],2]];E.scen.forEach((sc,k)=>{if(!sc.path)return;x.save();x.strokeStyle=sty[k][0];x.setLineDash(sty[k][1]);x.lineWidth=sty[k][2];x.beginPath();x.moveTo(x0,y0);sc.path.forEach((v,i)=>x.lineTo(X(N+i),Y(v)));x.stroke();x.restore();
+      x.fillStyle=sty[k][0];x.textAlign='right';x.font='600 11px '+ff;x.fillText(`${['Bullish','Neutral','Bearish'][k]} ${nf0.format(sc.p*100)}%`,X(N+E.H-1)-4,Y(sc.path[E.H-1])-9);x.font='11px '+ff});
+    x.save();x.setLineDash([7,4]);x.strokeStyle=C.fg;x.lineWidth=1.6;x.beginPath();x.moveTo(x0,y0);E.wpath.forEach((v,i)=>x.lineTo(X(N+i),Y(v)));x.stroke();x.restore()}
+  if(Fn&&(S.ov.fc||S.ov.scn))[[F.T,C.up],[F.St,C.down]].forEach(([v,col])=>{if(!v||v<lo||v>hi||!S.ov.fc)return;x.save();x.setLineDash([1,3]);x.strokeStyle=col;x.lineWidth=1.2;x.beginPath();x.moveTo(X(N-1),Y(v));x.lineTo(padL+pw,Y(v));x.stroke();x.restore()});
+  const cw=Math.max(1,bw*.64);for(let i=s;i<N;i++){const b=bars[i],col=b.c>=b.o?C.up:C.down,xc=X(i);x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1;
+    x.beginPath();x.moveTo(Math.round(xc)+.5,Y(b.h));x.lineTo(Math.round(xc)+.5,Y(b.l));x.stroke();const y1=Y(Math.max(b.o,b.c)),y2=Y(Math.min(b.o,b.c));x.fillRect(xc-cw/2,y1,cw,Math.max(1,y2-y1))}
+  if(S.ov.ema)[[A.e20,C.acc],[A.e50,C.warn]].forEach(([e,col])=>{x.strokeStyle=col;x.lineWidth=1.3;x.beginPath();for(let i=s;i<N;i++){i===s?x.moveTo(X(i),Y(e[i])):x.lineTo(X(i),Y(e[i]))}x.stroke()});
+  if(S.ov.pat){x.save();x.strokeStyle=C.vio;x.lineWidth=1.5;x.setLineDash([7,3]);A.pats.forEach(p=>p.lines.forEach(l=>{if(l.i2<s)return;x.beginPath();x.moveTo(X(Math.max(s,l.i1)),Y(l.p1+(l.p2-l.p1)*(Math.max(s,l.i1)-l.i1)/((l.i2-l.i1)||1)));x.lineTo(X(l.i2),Y(l.p2));x.stroke()}));
+    const pr=A.prim;if(pr&&pr.e>=s){x.setLineDash([]);x.strokeStyle=C.acc;x.lineWidth=2.4;x.beginPath();x.moveTo(X(Math.max(s,pr.s)),Y(pr.from));x.lineTo(X(pr.e),Y(pr.to));x.stroke();x.setLineDash([4,3]);x.lineWidth=1.4;x.strokeStyle=C.warn;[pr.fu,pr.fl].forEach(f=>{x.beginPath();x.moveTo(X(pr.e),Y(f.at(pr.e)));x.lineTo(X(N-1),Y(f.at(N-1)));x.stroke()})}x.restore()}
+  const t=label(S.ticker),pos=POS.find(p=>p.t===t),bv=S.par.bep>0?S.par.bep:pos?bep(pos.entry,pos.lot):0;
+  if(bv&&bv>lo&&bv<hi){x.save();x.setLineDash([8,4]);x.strokeStyle=C.gold;x.lineWidth=1.2;x.beginPath();x.moveTo(padL,Y(bv));x.lineTo(padL+pw,Y(bv));x.stroke();x.fillStyle=C.gold;x.textAlign='right';x.fillText(`BEP ${nf0.format(bv)}`,padL+pw-4,Y(bv)-8);x.restore()}
+  x.restore();
+  const ly=Y(A.last),up=A.last>=A.prev;x.fillStyle=up?C.up:C.down;x.beginPath();x.roundRect?x.roundRect(W-padR+2,ly-9,padR-4,18,4):x.rect(W-padR+2,ly-9,padR-4,18);x.fill();x.fillStyle='#fff';x.textAlign='left';x.font='600 11px '+ff;x.fillText(fp(A.last),W-padR+7,ly);x.font='11px '+ff;
+  const RY=v=>rTop+(100-v)/100*subH;x.fillStyle=C.fill;x.fillRect(padL,RY(70),pw,RY(30)-RY(70));x.strokeStyle=C.sep;[30,50,70].forEach(v=>{x.beginPath();x.moveTo(padL,Math.round(RY(v))+.5);x.lineTo(padL+pw,Math.round(RY(v))+.5);x.stroke();x.fillStyle=C.fg2;x.fillText(v,W-padR+6,RY(v))});
+  x.strokeStyle=C.vio;x.lineWidth=1.3;x.beginPath();for(let i=s;i<N;i++){const v=A.r[i];if(v==null)continue;i===s?x.moveTo(X(i),RY(v)):x.lineTo(X(i),RY(v))}x.stroke();x.fillStyle=C.fg2;x.textAlign='left';x.fillText('RSI 14  '+nf1.format(A.r[N-1]),padL+4,rTop-8);
+  if(showMacd){let mm=0;for(let i=s;i<N;i++)mm=Math.max(mm,Math.abs(A.m.line[i]),Math.abs(A.m.sig[i]),Math.abs(A.m.hist[i]));const MY=v=>mTop+subH/2-v/mm*subH/2;
+    for(let i=s;i<N;i++){const h=A.m.hist[i];x.fillStyle=h>=0?C.up:C.down;x.globalAlpha=.45;x.fillRect(X(i)-cw/2,Math.min(MY(0),MY(h)),cw,Math.abs(MY(h)-MY(0)))}x.globalAlpha=1;
+    [[A.m.line,C.acc],[A.m.sig,C.warn]].forEach(([a,col])=>{x.strokeStyle=col;x.lineWidth=1.2;x.beginPath();for(let i=s;i<N;i++)i===s?x.moveTo(X(i),MY(a[i])):x.lineTo(X(i),MY(a[i]));x.stroke()});
+    x.fillStyle=C.fg2;x.fillText('MACD 12·26·9',padL+4,mTop-8)}
+  const bottom=Hh-8;x.fillStyle=C.fg2;x.textAlign='center';const step=Math.max(1,Math.ceil(70/bw));let lastM='',lastX=-1e9;
+  for(let i=s;i<N+Fn;i++){const d=i<N?bars[i].t:F.rows[i-N].d;const mk=d.slice(0,7);if(mk!==lastM){lastM=mk;const xx=X(i);if(xx>padL+20&&xx<W-padR-20&&xx-lastX>54){const[y,m]=d.split('-');x.fillText(MON[+m-1]+(m==='01'?' '+y:''),xx,bottom);lastX=xx}}}
+  if(hover!=null&&hover>=s&&hover<N+Fn){const xc=X(hover);x.strokeStyle=C.fg3;x.setLineDash([3,3]);x.beginPath();x.moveTo(Math.round(xc)+.5,top);x.lineTo(Math.round(xc)+.5,bottomY);x.stroke();x.setLineDash([])}
+  G={s,N,Fn,bw,padL,X,top,ph,W}}
+
+function showTip(ev){if(!G)return;const r=$('#chart').getBoundingClientRect(),mx=ev.clientX-r.left,i=G.s+Math.floor((mx-G.padL)/G.bw);
+  if(i<G.s||i>=G.N+G.Fn||mx>G.W-62){hideTip();return}hover=i;drawChart();const tip=$('#tip');let h='';
+  if(i<G.N){const b=A.bars[i],ch=i?(b.c/A.bars[i-1].c-1)*100:0;h=`<b>${fdate(b.t)}</b><div class="r"><span>Open</span><span>${fp(b.o)}</span></div><div class="r"><span>High</span><span>${fp(b.h)}</span></div><div class="r"><span>Low</span><span>${fp(b.l)}</span></div><div class="r"><span>Close</span><span><b>${fp(b.c)}</b> <span class="${cls(ch)}">${fpc(ch)}</span></span></div><div class="r"><span>Volume</span><span>${nf0.format(b.v/100)} lots</span></div><div class="r"><span>RSI</span><span>${A.r[i]==null?'–':nf1.format(A.r[i])}</span></div>`}
+  else{const j=i-G.N,q=F.rows[j];h=`<b>${fdate(q.d)} · H+${j+1}</b>`;
+    if(S.ov.scn)h+=E.scen.map((sc,k)=>sc.path?`<div class="r"><span>${['Bullish','Neutral','Bearish'][k]} (${nf0.format(sc.p*100)}%)</span><span>${fp(sc.path[j])}</span></div>`:'').join('')+`<div class="r"><span>Prob-weighted</span><span><b>${fp(E.wpath[j])}</b></span></div>`;
+    if(S.ov.fc)h+=`<div class="r"><span>GBM ±1σ</span><span>${fp(q.l1)}–${fp(q.h1)}</span></div><div class="r"><span>GBM expected</span><span>${fp(q.exp)}</span></div>`;
+    const ev=events().filter(e=>e.d===q.d);if(ev.length)h+=ev.map(e=>`<div class="r"><span>Event</span><span>${esc(e.t)}</span></div>`).join('')}
+  tip.innerHTML=h;tip.hidden=false;const tw=tip.offsetWidth,wrapW=$('#chartWrap').clientWidth;tip.style.left=(mx+16+tw>wrapW?mx-16-tw:mx+16)+'px';tip.style.top=(G.top+6)+'px'}
+function hideTip(){hover=null;$('#tip').hidden=true;drawChart()}
+
+/* ---------- sidebar ---------- */
+function spark(bars){const c=bars.slice(-60).map(b=>b.c),mn=Math.min(...c),mx=Math.max(...c),w=56,h=22;const d=c.map((v,i)=>`${i?'L':'M'}${(i/(c.length-1)*w).toFixed(1)},${(h-2-(v-mn)/((mx-mn)||1)*(h-4)).toFixed(1)}`).join('');
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path d="${d}" fill="none" stroke="${c[c.length-1]>=c[0]?'var(--up)':'var(--down)'}" stroke-width="1.3"/></svg>`}
+function wlItem(k){const b=DATA[k].bars,n=b.length,ch=(b[n-1].c/b[n-2].c-1)*100;return `<button class="wl-item" data-k="${esc(k)}" aria-current="${k===S.ticker}"><span class="tk">${label(k)==='JKSE'?'^JKSE':esc(label(k))}</span><span class="sub">${nf0.format(b[n-1].c)}</span>${spark(b)}<span class="wchg ${cls(ch)}">${fpc(ch)}</span></button>`}
+function renderList(){const q=S.q.toUpperCase();const imp=Object.keys(DATA).filter(k=>k.startsWith('imp:')&&label(k).includes(q));
+  const box=$('#wlBox');if(!box)return;box.innerHTML=(imp.length?`<div class="sb-head"><span>IMPORTED DATA</span><span>${imp.length}</span></div>`+imp.map(wlItem).join(''):'')+`<div class="sb-head"><span>INDEX &amp; WATCHLIST</span></div>`+WATCH.map(w=>w[0]).filter(t=>t.includes(q)).map(wlItem).join('');
+  const cur=box.querySelector('[aria-current="true"]');if(cur&&!S._scrolled){cur.scrollIntoView({block:'nearest'});S._scrolled=true}}
+function sw(k,lab,sub){return `<label class="swrow"><span><span class="swl">${lab}</span>${sub?`<span class="sws">${sub}</span>`:''}</span><input type="checkbox" class="sw" data-ov="${k}" ${S.ov[k]?'checked':''}></label>`}
+function sec(id,title,body){const open=S.sec[id]!==false;return `<details class="sec" data-sec="${id}" ${open?'open':''}><summary>${title}</summary><div class="sec-b">${body}</div></details>`}
+function renderSide(){const P=S.par,ov=S.swing[S.ticker]||{};
+  $('#side').innerHTML=
+  sec('tk','Ticker',`<div class="search"><svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11 11l3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg><input id="q" type="search" placeholder="Search ticker" aria-label="Search ticker" value="${esc(S.q)}"></div>
+    <div class="wl" id="wlBox"></div><button class="btn sm" id="btnImport2" style="align-self:flex-start">Import CSV…</button>`)+
+  sec('per','Chart period',`<div class="seg full" role="group" aria-label="Time range">${['3M','6M','1Y','2Y'].map(t=>`<button data-tf="${t}" aria-pressed="${S.tf===t}">${t}</button>`).join('')}</div><div class="hint">Daily interval (1d). The range changes the view only; analysis uses all data.</div>`)+
+  sec('fc','Forecast',`<div class="field"><label for="pW">Forecast weeks ahead: <b>${P.weeks}</b> (${P.weeks*5} trading days)</label><input id="pW" type="range" min="1" max="26" value="${P.weeks}" data-par="weeks"></div>
+    ${sw('scn','Engine scenarios','bullish / neutral / bearish + weighted path')}${sw('fc','GBM fan','±1σ / ±2σ bands')}${sw('mc','Monte Carlo paths','36 GBM samples')}
+    <div class="par-grid">${pfield('pTilt','Tilt strength (%)',P.tilt,'type="number" min="0" max="100" step="5" data-par="tilt"')}${pfield('pBand','Neutral band (×σ)',P.band,'type="number" min="0.1" max="1.5" step="0.05" data-par="band"')}</div>`)+
+  sec('fib','Fibonacci & levels',`${sw('fibS','Cycle Fibonacci','120-trading-day swing')}${sw('fibM','Macro Fibonacci','all data')}
+    <div class="par-grid">${pfield('sbSLo','Custom low',ov.sLo||'',`type="number" min="0" placeholder="${fp(A.fibS.auto.lo)}" data-sw="sLo"`)}${pfield('sbSHi','Custom high',ov.sHi||'',`type="number" min="0" placeholder="${fp(A.fibS.auto.hi)}" data-sw="sHi"`)}
+    ${pfield('pPv','Pivot distance',P.pivot,'type="number" min="2" max="20" data-par="pivot"')}${pfield('pBep','BEP (optional)',P.bep||'','type="number" min="0" placeholder="auto" data-par="bep"')}</div>`)+
+  sec('tl','Macro trendlines',`${sw('cyc','Cycle channel','resistance & support since the trend high')}${sw('trend','Macro trendlines','peak/trough hull over all data')}${sw('pat','Patterns & flagpole','detected pattern lines')}`)+
+  sec('sr','Historical S/R zones',`${sw('zones','Show S/R zones','per date range')}<div class="par-grid">${pfield('pTol','Zone price tolerance (%)',P.tol,'type="number" min="0.5" max="5" step="0.1" data-par="tol"')}</div>`)+
+  sec('ind','Indicators & events',`${sw('ema','EMA 20 / 50')}${sw('vol','Volume')}${sw('ev','MSCI / BI meeting events','incl. ex-dividend & custom events')}`)+
+  sec('w','Forecast engine weights',`<div class="par-grid">${pfield('pWR','Regime',P.wR,'type="number" min="0" max="100" data-par="wR"')}${pfield('pWT','Technical',P.wT,'type="number" min="0" max="100" data-par="wT"')}${pfield('pWF','Fundamental',P.wF,'type="number" min="0" max="100" data-par="wF"')}</div><div class="hint">Weights are normalised over layers that have data. Macro & fundamental inputs are in the Forecast Engine tab.</div>`)+
+  `<div class="sb-note" id="sbNote"${DATA[S.ticker].sample?'':' hidden'}><b>Sample data.</b> Prices are synthetic. Import an OHLC CSV (IDX-API / yfinance) for real analysis.</div>
+  <button class="btn ghost sm" id="resetPar" style="align-self:flex-start">Reset parameters to default</button>`;
+  renderList()}
+
+/* ---------- header / chips / inspector ---------- */
+const OV=[['ema','EMA 20/50','var(--accent)'],['fibS','Fibonacci','var(--gold)'],['fibM','Macro Fib','var(--violet)'],['zones','S/R zones','var(--up)'],['cyc','Cycle channel','var(--down)'],['trend','Macro trendline','var(--fg2)'],['pat','Patterns','var(--violet)'],['scn','Engine scenarios','var(--fg)'],['fc','GBM fan','var(--accent)'],['mc','Monte Carlo paths','var(--fg2)'],['ev','Event MSCI/BI','var(--violet)'],['vol','Volume','var(--fg3)']];
+function renderChips(){document.querySelectorAll('[data-tf]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.tf===S.tf));
+  document.querySelectorAll('#tabSeg button').forEach(b=>{b.setAttribute('aria-pressed',b.dataset.tab===S.tab);b.setAttribute('role','tab');b.setAttribute('aria-selected',b.dataset.tab===S.tab)})}
+function verdictE(){const p=E.scen.map(x=>x.p),i=p.indexOf(Math.max(...p));return[['bull','Bullish'],['neutral','Neutral'],['bear','Bearish']][i]}
+function renderHeader(){const ch=(A.last/A.prev-1)*100,d=DATA[S.ticker],t=label(S.ticker);$('#tTicker').textContent=t==='JKSE'?'^JKSE':t;$('#tPrice').textContent=fp(A.last);
+  const c=$('#tChg');c.textContent=`${A.last-A.prev>=0?'+':'−'}${fp(Math.abs(A.last-A.prev))} (${fpc(ch,2)})`;c.className='chg '+cls(ch);
+  const src=$('#tSrc');src.textContent=d.sample?'sample data':'imported · '+fdate(A.bars[A.N-1].t);src.className='pill '+(d.sample?'warn':'info');
+  {const n=$('#sbNote');if(n)n.hidden=!d.sample}const cy=A.cyc;const stc=cy.status==='BREAKDOWN'?'bear':cy.status==='BREAKOUT'?'bull':cy.status.startsWith('RETEST')?'warn':'neutral';
+  $('#cycTitle').innerHTML=`<span>${t==='JKSE'?'JKSE':esc(t)} — Macro Cycle: ${cy.pre} → ${cy.structure} → ${cy.status==='IN CHANNEL'?'In channel':cy.status==='BREAKDOWN'?'Breakdown':cy.status==='BREAKOUT'?'Breakout':cy.status.startsWith('RETEST')?'Retest':cy.status==='IMPULSE'?'No channel yet':cy.status==='AT HIGH'?'Near the high':cy.status}</span><span class="pill ${stc}">${cy.status}${cy.status==='BREAKDOWN'?' ▼':cy.status==='BREAKOUT'?' ▲':''}</span>`;
+  const L=[];if(S.ov.ema)L.push(['var(--accent)','EMA20'],['var(--warn)','EMA50']);if(S.ov.fibS)L.push(['var(--gold)',`Fibonacci ${fp(A.fibS.lo)}–${fp(A.fibS.hi)}`]);if(S.ov.fibM)L.push(['var(--violet)',`Macro Fib ${fp(A.fibM.lo)}–${fp(A.fibM.hi)}`]);
+  if(S.ov.cyc&&cy.res)L.push(['var(--down)',`Cycle resistance ${fp(cy.resNow)}`],['var(--up)',`Cycle support ${fp(cy.supNow)}`]);
+  if(S.ov.scn)L.push(['var(--up)','Bullish scenario'],['var(--fg2)','Neutral scenario'],['var(--down)','Bearish scenario'],['var(--fg)','Probability-weighted path']);
+  if(S.ov.fc)L.push(['var(--accent)',`GBM σ ${nf2.format(F.sigma*100)}%/day`]);if(S.ov.ev)L.push(['var(--violet)','MSCI effective'],['var(--accent)','BI meeting']);
+  $('#legend').innerHTML=L.map(([c,t])=>`<span><i style="background:${c}"></i>${t}</span>`).join('')}
+function pfield(id,lab,val,attrs,full){return `<div class="field${full?' full':''}"><label for="${id}">${lab}</label><input id="${id}" ${attrs} value="${val}"></div>`}
+function renderInspector(){const N=A.N,P=S.par,[vc,vt]=verdictE(),sc=E.scen;
+  const near=(arr,dir)=>arr.map(l=>`<div class="lv"><span><span class="${dir}">${fp(l.p)}</span> <span class="muted">${fpc((l.p/A.last-1)*100)}</span></span><span class="src">${esc(l.src)}</span></div>`).join('')||'<div class="hint">No levels in range.</div>';
+  $('#summary').innerHTML=`
+  <div class="group"><div class="group-h"><h2>Forecast engine</h2><span class="pill ${vc}">${vt}</span></div><div class="group-b">
+    <div class="gauge"><div class="big ${cls(E.comb)}">${fs(E.comb)}</div><div class="meter"><b style="left:${(Math.max(-1,Math.min(1,E.comb))+1)*50}%"></b></div><div class="hint" style="display:flex;justify-content:space-between;width:100%"><span>−1 adverse</span><span>combined evidence</span><span>+1 supportive</span></div></div>
+    <div class="pbar sm" style="margin:8px 0"><div class="b" style="width:${sc[0].p*100}%">${nf0.format(sc[0].p*100)}%</div><div class="n" style="width:${sc[1].p*100}%">${nf0.format(sc[1].p*100)}%</div><div class="s" style="width:${sc[2].p*100}%">${nf0.format(sc[2].p*100)}%</div></div>
+    <div class="sig"><span class="k">Market regime</span><span class="num ${cls(E.reg.s)}">${fs(E.reg.s)}</span></div>
+    <div class="sig"><span class="k">Technical</span><span class="num ${cls(E.tech.s)}">${fs(E.tech.s)}</span></div>
+    <div class="sig"><span class="k">Fundamental</span><span class="num ${cls(E.fund.s)}">${fs(E.fund.s)}</span></div>
+    <div class="sig"><span class="k">Primary pattern</span><span class="pill ${A.prim?A.prim.bias:'neutral'}">${A.prim?esc(A.prim.name.replace(/ \(.*\)/,'')):'–'}</span></div>
+  </div></div>
+  <div class="group"><div class="group-h"><h2>Key levels</h2><span class="hint">from ${fp(A.last)}</span></div><div class="group-b">
+    <h3>Resistance</h3>${near(PL.ress,'down')}<h3 style="margin-top:10px">Support</h3>${near(PL.sups,'up')}</div></div>
+  <div class="group"><div class="group-h"><h2>Volatility</h2></div><div class="group-b">
+    <div class="sig"><span class="k">Daily σ (120d)</span><span class="num">${nf2.format(A.sigma*100)}%</span></div>
+    <div class="sig"><span class="k">Annual σ</span><span class="num">${nf1.format(A.sigma*Math.sqrt(250)*100)}%</span></div>
+    <div class="sig"><span class="k">ATR 14</span><span class="num">${fp(A.at[N-1])} (${nf1.format(A.at[N-1]/A.last*100)}%)</span></div>
+    <div class="sig"><span class="k">Tick size</span><span class="num">${IDX?'index':'Rp '+tick(A.last)}</span></div></div></div>`}
+
+/* ---------- panels ---------- */
+function kpi(l,v,s,c=''){return `<div class="kpi"><div class="l">${l}</div><div class="v ${c}">${v}</div><div class="s">${s||'&nbsp;'}</div></div>`}
+function ins(kind,mark,html){return `<div class="ins ${kind}"><span class="dot" aria-hidden="true">${mark}</span><div>${html}</div></div>`}
+function retrPos(f){const p=A.last,lv=f.levels;const pct=(p-f.lo)/(f.hi-f.lo)*100;let a=null,b=null;for(let i=0;i<lv.length-1;i++)if(p>=lv[i].p&&p<=lv[i+1].p){a=lv[i];b=lv[i+1]}return{pct,a,b}}
+const lvl=r=>A.fibS.levels.find(l=>l.r===r).p;
+function waveTargets(){const p=A.last,all=[...A.fibS.levels,...A.fibS.ext].sort((a,b)=>a.p-b.p),lab=l=>`Fibo ${l.r.toFixed(3)}`;
+  const above=all.filter(l=>l.p>p*1.005),below=all.filter(l=>l.p<p*0.995).reverse();
+  const bull=above.find(l=>l.r>=0.618)||above[above.length-1],bear=A.fibS.lo<p*0.995?A.fibS.levels[0]:below[below.length-1],res=above[0],hiR=all.find(l=>l.r===1&&l.p>p*1.005)||above.find(l=>l.r>1);
+  const row=(col,t,l)=>l?`<div class="row">${col}<span><b>${t} (${lab(l)}):</b> ${fp(l.p)} <span class="muted">${fpc((l.p/p-1)*100)}</span></span></div>`:'';
+  return row(dotS(1),'Bullish wave target',bull)+row(dotS(-1),'Bearish wave target',bear)+row(dotS(0),'Resistance level',res)+row('<span class="dot-s" style="background:var(--accent)"></span>','High resistance',hiR)}
+function panelStruktur(){const N=A.N,c=A.c,ch=(i)=>(A.last/c[Math.max(0,N-1-i)]-1)*100,rp=(A.last-A.lo52)/(A.hi52-A.lo52)*100,cy=A.cyc,[vc,vt]=verdictE(),t=label(S.ticker);
+  const rs=retrPos(A.fibS);const I=[];const tr=(A.last>A.e50[N-1]?1:-1)+(A.e20[N-1]>A.e50[N-1]?1:-1);
+  I.push(ins(tr>0?'bull':tr<0?'bear':'warn',tr>0?'↑':tr<0?'↓':'·',`<b>Trend.</b> Price ${fp(A.last)} is ${A.last>A.e50[N-1]?'above':'below'} EMA50 (${fp(A.e50[N-1])}) and EMA20 is ${A.e20[N-1]>A.e50[N-1]?'above':'below'} EMA50. ${tr===2?'The uptrend structure is intact.':tr===-2?'The downtrend structure dominates.':'Mixed trend — a transition phase.'}`));
+  const R=A.r[N-1];I.push(ins(R>70?'warn':R<30?'info':R>=50?'bull':'bear','R',`<b>Momentum.</b> RSI ${nf1.format(R)}${R>70?' — overbought, prone to profit taking.':R<30?' — oversold, a technical rebound is possible.':R>=50?' — positive momentum.':' — weak momentum.'} MACD histogram is ${A.m.hist[N-1]>0?'positive':'negative'} and ${A.m.hist[N-1]>A.m.hist[N-2]?'strengthening':'weakening'}.`));
+  I.push(ins('info','F',`<b>Fibonacci.</b> Cycle ${fp(A.fibS.lo)}–${fp(A.fibS.hi)}: price sits at the ${nf1.format(rs.pct)}% retracement${rs.a?` (between ${nf1.format(rs.a.r*100)}% and ${nf1.format(rs.b.r*100)}%)`:''}.`));
+  I.push(ins(vc,'E',`<b>Forecast engine, ${E.H} trading days.</b> Bullish ${nf0.format(E.scen[0].p*100)}% · Neutral ${nf0.format(E.scen[1].p*100)}% · Bearish ${nf0.format(E.scen[2].p*100)}%. Combined evidence ${fs(E.comb)}; median of all paths ${fp(E.all.med)} (P10–P90 ${fp(E.all.p10)}–${fp(E.all.p90)}).`));
+  const nx=events().filter(e=>e.d>A.bars[N-1].t).slice(0,2);if(nx.length)I.push(ins('warn','!',`<b>Upcoming events.</b> ${nx.map(e=>`${esc(e.t)} (${fdate(e.d)})`).join(' · ')}. Volatility around these dates can exceed the model bands.`));
+  const st=cy.status;
+  return `<div class="group"><div class="kpis">${kpi('Last close',fp(A.last),fdate(A.bars[N-1].t))}${kpi('1 week',fpc(ch(5)),'5 trading days',cls(ch(5)))}${kpi('1 month',fpc(ch(21)),'21 trading days',cls(ch(21)))}${kpi('3 months',fpc(ch(63)),'63 trading days',cls(ch(63)))}${kpi('52-week position',nf0.format(rp)+'%',`${fp(A.lo52)} – ${fp(A.hi52)}`)}${kpi('Dominant scenario',vt,`${nf0.format(Math.max(...E.scen.map(x=>x.p))*100)}% probability`,vc==='bull'?'up':vc==='bear'?'down':'')}</div></div>
+  <h2>Market Structure Summary — ${t==='JKSE'?'JKSE':esc(t)}</h2>
+  <div class="cols">
+    <div class="group"><div class="group-h"><h2>Pattern &amp; Signal Status</h2><span class="pill ${st==='BREAKDOWN'?'bear':st==='BREAKOUT'?'bull':'neutral'}">${st}</span></div><div class="group-b ss">
+      <div class="row">•<span><b>Primary pattern:</b> ${cy.structure}${A.prim?` · ${esc(A.prim.name)}`:''}</span></div>
+      <div class="row">•<span><b>Trend reference:</b> peaks identified since the high at <b>${fp(cy.hi)}</b> (${fdate(A.bars[cy.a].t)})</span></div>
+      <div class="row">•<span><b>Current price:</b> ${fp(A.last)}</span></div>
+      <div class="row">•<span><b>Signal output:</b> ${cy.res?(st==='BREAKDOWN'?`Price is in <b>BREAKDOWN</b> below channel support (${fp(cy.supNow)}); macro resistance trendline ${fp(cy.resNow)}.`:st==='BREAKOUT'?`Price is in <b>BREAKOUT</b> above the resistance trendline (${fp(cy.resNow)}).`:`Price is inside the ${fp(cy.supNow)}–${fp(cy.resNow)} channel (${st.toLowerCase()}).`):'No channel yet — the impulse is still running.'}</span></div>
+      ${cy.res?`<div class="row">•<span><b>Support trendline:</b> ${fp(cy.supNow)} (${cy.shape.toLowerCase()})</span></div>`:''}
+    </div></div>
+    <div class="group"><div class="group-h"><h2>Key Wave Forecast Targets</h2><span class="hint">cycle Fibonacci</span></div><div class="group-b ss">
+      ${waveTargets()}
+      <div class="row muted" style="font-size:11.5px">P(horizon end ≥ 0.618) ${nf0.format(E.p618*100)}% · P(≤ 0.000) ${nf0.format(E.pf0*100)}%</div>
+    </div></div>
+  </div>
+  <div class="group"><div class="group-h"><h2>Automatic reading</h2><span class="hint">updates with every ticker or parameter change</span></div><div class="group-b insights">${I.join('')}</div></div>`}
+
+function panelPola(){const cy=A.cyc,pr=A.prim,det=new Set(A.pats.map(p=>p.id)),sec=A.pats.filter(p=>REVERSAL.has(p.id)),oth=A.pats.filter(p=>!REVERSAL.has(p.id));const st=cy.status;
+  const stc=st==='BREAKDOWN'?'down':st==='BREAKOUT'?'up':'';
+  return `<h2>Automated Pattern Analysis</h2>
+  <div class="group"><div class="kpis">${kpi('Last price',fp(A.last),fdate(A.bars[A.N-1].t))}${kpi('Resistance (now)',cy.res?fp(cy.resNow):'–','cycle trendline')}${kpi('Support (now)',cy.res?fp(cy.supNow):'–','cycle trendline')}${kpi('Channel width',cy.res?fp(cy.width):'–',cy.res?nf1.format(cy.width/A.last*100)+'% of price':'')}<div class="kpi"><div class="l">Pattern status</div><div class="status-big ${stc}">${st}${st==='BREAKDOWN'?' ▼':st==='BREAKOUT'?' ▲':''}</div><div class="s">${cy.structure}</div></div></div>
+  ${cy.res?`<div class="formula">${cy.shape} — support/resistance slope ratio = <b>${nf2.format(cy.ratio)}</b> (close to 1.0 = parallel; further from 1.0 = converging/diverging). R² resistance ${nf2.format(cy.res.r2)}, support ${nf2.format(cy.sup.r2)}.</div>`:''}</div>
+  <div class="group"><div class="group-h"><h2>Chart Pattern Detector — last Fibonacci cycle</h2><span class="hint">pivot distance ${S.par.pivot}</span></div>
+  ${pr?`<div class="group-b"><h3>Primary pattern (flagpole + consolidation channel)</h3>
+    <div class="cols" style="gap:10px"><div class="ss"><b>Flagpole (${pr.dir==='up'?'UP':'DOWN'})</b><div>• Period: ${A.bars[pr.s].t} → ${A.bars[pr.e].t}</div><div>• Return: <span class="${cls(pr.ret)}">${fpc(pr.ret)}</span></div><div>• Price: ${fp(pr.from)} → ${fp(pr.to)}</div></div>
+    <div class="ss"><b>Consolidation (${pr.shape})</b><div>• Period: ${A.bars[pr.e].t} → ${A.bars[A.N-1].t} (${pr.days} days)</div><div>• Upper line slope: ${nf2.format(pr.su)}/day (R²=${nf2.format(pr.fu.r2)})</div><div>• Lower line slope: ${nf2.format(pr.sl)}/day (R²=${nf2.format(pr.fl.r2)})</div></div></div>
+    <div class="ins ${pr.bias==='bull'?'bull':pr.bias==='bear'?'bear':'warn'}" style="margin-top:10px"><span class="dot" aria-hidden="true">P</span><div><b>Pattern detected: ${esc(pr.name)}</b> — ${pr.impl}.</div></div>
+    <div class="hint" style="margin-top:6px">The classic implication of this shape is noted above. It is not a guarantee — any of these patterns can fail if the breakout goes the other way.</div></div>`:'<div class="group-b hint">No qualifying flagpole + consolidation yet (needs at least 6 consolidation days after the main leg).</div>'}
+  <div class="group-b" style="border-top:.5px solid var(--sep)"><h3>Secondary pattern(s) — nested reversal signals</h3>
+    ${sec.length?sec.map(p=>`<div class="pcard" style="padding:8px 0"><div class="t">${dotS(p.bias==='bull'?1:p.bias==='bear'?-1:0)}${p.bias==='bull'?'Bullish':'Bearish'} ${PATS[p.id]} <span class="muted" style="font-weight:400">— level ≈ ${fp(p.level)}${p.neck?`, neckline ≈ ${fp(p.neck)}`:''} (${p.span})</span></div><div class="hint">${p.note}</div></div>`).join(''):'<div class="hint">No nested reversal signals right now.</div>'}
+    <div class="hint" style="margin-top:6px">Secondary patterns can be nested inside the primary pattern's consolidation leg (e.g. a Double Top inside a larger Bull Flag) — both readings can be valid on different scales.</div></div>
+  ${oth.length?`<div class="group-b" style="border-top:.5px solid var(--sep)"><h3>Other structure &amp; signals</h3>${oth.map(p=>`<div class="pcard" style="padding:8px 0"><div class="t">${PATS[p.id]} <span class="pill ${p.bias}">${p.bias==='bull'?'Bullish':p.bias==='bear'?'Bearish':'Neutral'}</span></div><div class="hint">${p.note}</div></div>`).join('')}</div>`:''}
+  </div>
+  <div class="group"><div class="group-h"><h2>20 patterns scanned</h2><span class="hint">${det.size} active</span></div><div class="group-b"><div class="pat-grid">${Object.entries(PATS).map(([k,n])=>`<div class="pat ${det.has(k)?'on':'off'}"><span>${n}</span>${det.has(k)?'<span class="pill info">active</span>':'<span>–</span>'}</div>`).join('')}</div></div></div>`}
+
+function facTable(f,showGroup){return `<div class="tscroll"><table><thead><tr>${showGroup?'<th class="left">Group</th>':''}<th class="left">Factor</th><th class="wrap">Latest</th><th>Signal</th><th class="wrap">Rule</th></tr></thead><tbody>${f.map(x=>`<tr>${showGroup?`<td class="left">${x.g}</td>`:''}<td class="left">${x.n}</td><td class="wrap">${x.l}</td><td>${dotS(x.s)}${x.s==null?(x.r.startsWith('context')?'info':'n/a'):fs(x.s)}</td><td class="wrap muted">${x.r}</td></tr>`).join('')}</tbody></table></div>`}
+function macField(id,lab,k,attrs){return `<div class="field"><label for="${id}">${lab}</label><input id="${id}" data-mac="${k}" value="${MAC[k]}" ${attrs||'type="number" step="0.01"'}></div>`}
+function macSel(id,lab,k,opts){return `<div class="field"><label for="${id}">${lab}</label><select id="${id}" data-mac="${k}">${opts.map(([v,t])=>`<option value="${v}"${String(MAC[k])===String(v)?' selected':''}>${t}</option>`).join('')}</select></div>`}
+const SC=[['','n/a'],['1','+1,00'],['0.67','+0,67'],['0.33','+0,33'],['0','0'],['-0.33','−0,33'],['-0.67','−0,67'],['-1','−1,00']];
+function panelEngine(){const sc=E.scen,t=label(S.ticker),Fd=FUND[t]||{},tab=S.etab;const pct=x=>(x>=0?'+':'')+nf1.format(x)+'pp';
+  const lay=E.L.map(x=>`${nf0.format(x[2]/E.W*100)}% × ${fs(x[1])} (${x[0]})`).join(' + ');
+  const regLabel=E.reg.s==null?'n/a':E.reg.s<=-0.25?'Risk-off':E.reg.s>=0.25?'Risk-on':'Neutral';
+  const warn=[];if(!isNum(MAC.flow))warn.push('Foreign flow not entered — add a score from IDX-API foreign_trading data to complete the flow group.');if(!isNum(MAC.id10))warn.push('Indonesia 10Y yield unavailable — enter it manually below.');if(E.fund.s==null)warn.push(`No fundamental ratios entered for ${esc(t)} — the fundamental layer is excluded from the weights.`);if(DATA[S.ticker].sample)warn.push('This ticker still uses sample prices; the technical layer and probabilities are illustrations only.');
+  let body='';
+  if(tab==='reg')body=`<div class="layers">${E.reg.G.map(g=>kpi(g.g,`<span class="${cls(g.s)}">${fs(g.s)}</span>`,'')).join('')}</div>${facTable(E.reg.f,true)}
+    <div class="group-b" style="border-top:.5px solid var(--sep)"><h3>Macro inputs (manual)</h3><div class="form">
+    ${macField('mJ63','JCI 63d return (%)','jRet63')}${macSel('mJ50','JCI above SMA50','j50',[['yes','Yes'],['no','No']])}${macSel('mJ200','JCI above SMA200','j200',[['yes','Yes'],['no','No']])}${macField('mBr','Breadth: % above 20DMA','breadth')}
+    ${macField('mJV','JCI volume 5d/20d (x)','jVol')}${macField('mJ5','JCI 5d return (%)','jRet5')}${macField('mJR','Volatility ratio 20d/1y','jRv')}${macField('mBI','BI Rate (%)','bi')}
+    ${macField('mBE','BI Rate expectation (bps, 6M)','biExp')}${macField('mFF','Fed Funds (%)','fed')}${macField('mFC','Fed Funds 6M chg (pp)','fedChg')}${macField('mUS','US 10Y (%)','us10')}
+    ${macField('mUC','US 10Y 3M chg (pp)','us10Chg')}${macField('mID','Indonesia 10Y (%)','id10','type="number" step="0.01" placeholder="n/a"')}${macField('mIC','Indonesia 10Y 3M chg (pp)','id10Chg','type="number" step="0.01" placeholder="n/a"')}
+    ${macSel('mFX','FX & dollar score','fx',SC)}${macSel('mGL','Global risk score','glob',SC)}${macSel('mFL','Foreign flow score','flow',SC)}
+    </div><div class="hint" style="margin-top:8px">Defaults come from the app v1.4.7 snapshot (Oct 13, 2026). Update them before use. Macro inputs apply to every ticker.</div><button class="btn sm" id="macReset" style="margin-top:8px">Reset to defaults</button></div>`;
+  else if(tab==='tech')body=facTable(E.tech.f,false);
+  else body=`${facTable(E.fund.f,false)}<div class="group-b" style="border-top:.5px solid var(--sep)"><h3>${esc(t)} ratios (manual, per ticker)</h3><div class="form">
+    ${[['fE','EPS growth YoY (%)','eps'],['fR','ROE (%)','roe'],['fP','PBV (x)','pbv'],['fPE','PER (x)','per'],['fD','Dividend yield (%)','dy']].map(([id,l,k])=>`<div class="field"><label for="${id}">${l}</label><input id="${id}" type="number" step="0.01" data-fund="${k}" value="${isNum(Fd[k])?Fd[k]:''}" placeholder="n/a"></div>`).join('')}
+    </div><div class="hint" style="margin-top:8px">Fill from financial statements or IDX-API financial_ratio. EV/EBITDA is not used because it means little for banks.</div></div>`;
+  return `<div class="group"><div class="group-h"><h2>Forecast Engine — Regime → Technical → Fundamental → Probabilities → Target / Range</h2></div>
+    <div class="layers">${kpi('1 · Market regime',`<span class="${cls(E.reg.s)}">${fs(E.reg.s)}</span>`,'')}${kpi('2 · Technical',`<span class="${cls(E.tech.s)}">${fs(E.tech.s)}</span>`,'')}${kpi('3 · Fundamental',`<span class="${cls(E.fund.s)}">${fs(E.fund.s)}</span>`,E.fund.s==null?'no data':'')}${kpi('Market regime',regLabel,'')}</div>
+    <div class="formula"><b>Combined evidence = ${fs(E.comb)}</b> = ${lay||'no layers'} · tilt strength ${S.par.tilt}%</div>
+    <div class="subtabs"><div class="seg" role="group" aria-label="Layer"><button data-etab="reg" aria-pressed="${tab==='reg'}">1 · Market regime</button><button data-etab="tech" aria-pressed="${tab==='tech'}">2 · Technical</button><button data-etab="fund" aria-pressed="${tab==='fund'}">3 · Fundamental</button></div></div>
+    ${body}</div>
+  ${warn.length?`<div class="insights">${warn.map(w=>ins('warn','!',w)).join('')}</div>`:''}
+  <h2>Probabilities</h2>
+  <div class="group"><div class="kpis">${sc.map((x,k)=>{const d=(x.p-x.pb)*100;return kpi(`${dotS(k===0?1:k===2?-1:0)}${['Bullish','Neutral','Bearish'][k]}`,nf0.format(x.p*100)+'%',`<span class="${Math.abs(d)<0.5?'muted':(k===0?cls(d):k===2?cls(-d):'muted')}">${Math.abs(d)<0.5?'no change':pct(d)} vs no-view base</span>`)}).join('')}</div>
+  <div class="group-b"><div class="pbar"><div class="b" style="width:${sc[0].p*100}%">Bullish ${nf0.format(sc[0].p*100)}%</div><div class="n" style="width:${sc[1].p*100}%">Neutral ${nf0.format(sc[1].p*100)}%</div><div class="s" style="width:${sc[2].p*100}%">Bearish ${nf0.format(sc[2].p*100)}%</div></div></div></div>
+  <h2>Target / Range</h2>
+  <div class="group"><div class="tscroll"><table><thead><tr><th class="left">Scenario</th><th>Probability</th><th>Target (median)</th><th>Range (P25–P75)</th><th class="wrap">Defined as</th></tr></thead><tbody>
+    <tr><td class="left">${dotS(1)}Bullish</td><td>${nf0.format(sc[0].p*100)}%</td><td>${fp(sc[0].med)}</td><td>${fp(sc[0].p25)} – ${fp(sc[0].p75)}</td><td class="wrap muted">ends above ${fp(E.up)} (${fpc((E.up/A.last-1)*100)})</td></tr>
+    <tr><td class="left">${dotS(0)}Neutral</td><td>${nf0.format(sc[1].p*100)}%</td><td>${fp(sc[1].med)}</td><td>${fp(sc[1].p25)} – ${fp(sc[1].p75)}</td><td class="wrap muted">ends between ${fp(E.dn)} and ${fp(E.up)}</td></tr>
+    <tr><td class="left">${dotS(-1)}Bearish</td><td>${nf0.format(sc[2].p*100)}%</td><td>${fp(sc[2].med)}</td><td>${fp(sc[2].p25)} – ${fp(sc[2].p75)}</td><td class="wrap muted">ends below ${fp(E.dn)} (${fpc((E.dn/A.last-1)*100)})</td></tr>
+    <tr class="here"><td class="left">All paths</td><td>100%</td><td>${fp(E.all.med)} <span class="muted">(mean ${fp(E.all.mean)})</span></td><td>${fp(E.all.p10)} – ${fp(E.all.p90)}</td><td class="wrap muted">80% range (P10–P90) after ${E.H} trading days</td></tr>
+  </tbody></table></div>
+  <div class="group-b hint" style="display:flex;flex-direction:column;gap:6px;border-top:.5px solid var(--sep)">
+    <span>Each scenario's target is the median final price among simulated paths that END in that state; its range is the middle 50% (P25–P75). Horizon σ ≈ ${nf1.format(E.sH*100)}%, neutral band ±${nf1.format((Math.exp(E.band)-1)*100)}%.</span>
+    <span>ATR cross-check: ATR(14) = ${fp(E.atr)} (${nf1.format(E.atr/A.last*100)}% of price), so ATR × √${E.H} ≈ ±${fp(E.atrH)} (±${nf0.format(E.atrH/A.last*100)}%) versus the simulated horizon σ of ${nf0.format(E.sH*100)}%. ATR measures the daily high-low range, not a standard deviation, so it is only a rough sanity check.</span>
+    <span>Fibonacci reference: P(price ends at or above the 0.618 level ${fp(E.f618)}) = ${nf0.format(E.p618*100)}%; P(ends at or below the 0.000 level ${fp(E.f0)}) = ${nf0.format(E.pf0*100)}%.</span>
+    <span><b>How to read this.</b> Every factor is a rule-of-thumb signal between −1 (adverse) and +1 (supportive); the thresholds are heuristics, not calibrated against this stock's history. Factors are averaged inside groups, groups inside layers, and the three layers are combined with the sidebar weights. The base rate bootstraps the stock's own daily returns (250 days) after removing their average drift, so with no evidence the odds depend only on volatility and the neutral band (~31/38/31 at the default). Combined evidence shifts the expected return by at most ±0.5σ at 100% tilt strength. These are model-implied probabilities, not calibrated forecasts; event risk is not modelled.</span>
+  </div></div>`}
+
+function fibTable(f,kind){const p=A.last,rp=retrPos(f);const rows=[...f.levels.map(l=>({...l,t:'ret'})),...f.ext.map(l=>({...l,t:'ext'}))].sort((a,b)=>b.p-a.p);let placed=false,html='';
+  rows.forEach(l=>{if(!placed&&l.p<p){html+=`<tr class="here"><td>Current price</td><td>${fp(p)}</td><td>—</td><td>${nf1.format(rp.pct)}%</td></tr>`;placed=true}
+    const asp=l.t==='ext'&&(l.p>A.fibM.hi||l.r>1.3);html+=`<tr><td>${l.t==='ext'?'Extension ':''}${nf1.format(l.r*100)}%${asp?' <span class="pill warn">aspirational</span>':''}${l.r===0.618?' <span class="pill info">golden</span>':''}</td><td>${fp(l.p)}</td><td class="${cls(l.p-p)}">${fpc((l.p/p-1)*100)}</td><td class="muted">${l.t==='ret'?(l.r===0?'trend low':l.r===1?'trend high':'retracement'):'target'}</td></tr>`});
+  if(!placed)html+=`<tr class="here"><td>Current price</td><td>${fp(p)}</td><td>—</td><td>${nf1.format(rp.pct)}%</td></tr>`;
+  const ov=S.swing[S.ticker]||{},pre=kind==='S'?'s':'m';
+  return `<div class="group"><div class="group-h"><h2>${kind==='S'?'Cycle Fibonacci (120 trading days)':'Macro Fibonacci (all data)'}</h2><span class="pill ${f.dir==='up'?'bull':'bear'}">${f.dir==='up'?'up':'down'}</span></div>
+  <div class="group-b"><div class="form" style="margin-bottom:4px"><div class="field"><label for="${pre}Lo">Custom low (auto ${fp(f.auto.lo)})</label><input id="${pre}Lo" type="number" inputmode="numeric" data-sw="${pre}Lo" value="${ov[pre+'Lo']||''}" placeholder="${fp(f.auto.lo)}"></div><div class="field"><label for="${pre}Hi">Custom high (auto ${fp(f.auto.hi)})</label><input id="${pre}Hi" type="number" inputmode="numeric" data-sw="${pre}Hi" value="${ov[pre+'Hi']||''}" placeholder="${fp(f.auto.hi)}"></div></div>
+  </div><div class="tscroll"><table><thead><tr><th>Level</th><th>Price</th><th>Distance</th><th>Note</th></tr></thead><tbody>${html}</tbody></table></div></div>`}
+function panelFib(){const Z=A.zones;return `<div class="cols">${fibTable(A.fibS,'S')}${fibTable(A.fibM,'M')}</div>
+  <div class="group"><div class="group-h"><h2>Historical S/R Zones — ${Z.length} zone(s) detected</h2><span class="hint">tolerance ${nf1.format(S.par.tol)}% · 260 trading days</span></div><div class="tscroll"><table><thead><tr><th class="left">Role</th><th>Low</th><th>High</th><th>Mid</th><th>Distance</th><th>Touches</th><th>Last touched</th></tr></thead><tbody>
+  ${Z.slice().sort((a,b)=>b.mid-a.mid).map(z=>`<tr><td class="left"><span class="pill ${z.role==='S'?'bull':z.role==='R'?'bear':'neutral'}">${z.role==='S'?'Support':z.role==='R'?'Resistance':'Price in zone'}</span></td><td>${fp(z.lo)}</td><td>${fp(z.hi)}</td><td>${fp(z.mid)}</td><td class="${cls(z.mid-A.last)}">${fpc((z.mid/A.last-1)*100)}</td><td>${z.n}</td><td>${fdate(A.bars[z.last].t)}</td></tr>`).join('')||'<tr><td colspan="7" class="muted">No zones with ≥ 3 touches.</td></tr>'}</tbody></table></div></div>
+  <div class="hint">Convention: 0% = trend low, 100% = trend high, level = low + r × (high − low). Extensions above ~130% or above the macro high are labelled aspirational.</div>`}
+
+function drawHist(){const cv=$('#hist');if(!cv)return;const W=cv.parentElement.clientWidth,H=150,dpr=window.devicePixelRatio||1;cv.width=W*dpr;cv.height=H*dpr;cv.style.height=H+'px';const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);
+  const s=F.sorted,lo=s[Math.floor(s.length*.01)],hi=s[Math.floor(s.length*.99)],B=36,bins=new Array(B).fill(0);s.forEach(v=>{if(v<lo||v>hi)return;bins[Math.min(B-1,Math.floor((v-lo)/(hi-lo)*B))]++});const mx=Math.max(...bins),bw=(W-8)/B,ch=H-22;
+  bins.forEach((n,i)=>{const v=lo+(i+.5)/B*(hi-lo);x.fillStyle=v>=A.last?C.up:C.down;x.globalAlpha=.55;const h=n/mx*ch;x.fillRect(4+i*bw+1,ch-h+4,bw-2,h)});x.globalAlpha=1;
+  const XV=v=>4+(v-lo)/(hi-lo)*(W-8);x.font='11px '+getComputedStyle(document.body).fontFamily;x.textAlign='center';x.fillStyle=C.fg2;
+  [[F.q5,'P5'],[A.last,'Now'],[F.q95,'P95']].forEach(([v,t])=>{x.strokeStyle=t==='Now'?C.fg:C.fg3;x.setLineDash(t==='Now'?[]:[3,3]);x.beginPath();x.moveTo(XV(v),4);x.lineTo(XV(v),ch+4);x.stroke();x.setLineDash([]);x.fillText(`${t} ${fp(v)}`,Math.min(W-40,Math.max(40,XV(v))),H-6)})}
+function panelForecast(){const o=S.fc,H=E.H,L=F.rows[F.rows.length-1],w2=(L.h2-L.l2)/A.last*100;const cps=F.rows.map((r,i)=>({r,i})).filter(({i})=>(i+1)%5===0||i===F.rows.length-1);
+  return `<div class="group"><div class="group-h"><h2>GBM parameters</h2><span class="hint">σₙ = σ√n, μₙ = μ·n, price = S₀·e^(μₙ ± kσₙ) · horizon ${H} trading days (set in the sidebar)</span></div><div class="group-b"><div class="form">
+    <div class="field"><label for="fD">Drift</label><select id="fD" data-fc="drift"><option value="hist"${o.drift==='hist'?' selected':''}>Historical 120d (${fpc((Math.exp(A.mu*250)-1)*100)}/yr)</option><option value="zero"${o.drift==='zero'?' selected':''}>Neutral (μ = 0)</option><option value="custom"${o.drift==='custom'?' selected':''}>Custom per year</option></select></div>
+    ${o.drift==='custom'?`<div class="field"><label for="fA">Custom drift (%/yr)</label><input id="fA" type="number" step="0.5" value="${o.ann}" data-fc="ann"></div>`:''}
+    <div class="field"><label for="fV">Daily σ % (auto ${nf2.format(A.sigma*100)})</label><input id="fV" type="number" step="0.05" min="0" value="${o.volOv||''}" placeholder="${nf2.format(A.sigma*100)}" data-fc="volOv"></div>
+    <div class="field"><label for="fE">Event date</label><input id="fE" type="date" value="${o.evDate}" data-fc="evDate"></div>
+    <div class="field"><label for="fEF">σ increase after event</label><select id="fEF" data-fc="evF">${[1,1.1,1.15,1.2,1.3].map(v=>`<option value="${v}"${+o.evF===v?' selected':''}>×${nf2.format(v)}${v===1?' (none)':''}</option>`).join('')}</select></div>
+    <div class="field"><label for="fT">Target (auto TP1 ${fp(PL.tps[0].p)})</label><input id="fT" type="number" value="${o.target||''}" placeholder="${fp(PL.tps[0].p)}" data-fc="target"></div>
+    <div class="field"><label for="fS">Stop (auto CL ${fp(PL.cl)})</label><input id="fS" type="number" value="${o.stop||''}" placeholder="${fp(PL.cl)}" data-fc="stop"></div>
+  </div></div></div>
+  <div class="group"><div class="kpis">${kpi(`Expected H+${H}`,fp(L.exp),fpc((L.exp/A.last-1)*100))}${kpi('±1σ range (68%)',`${fp(L.l1)}–${fp(L.h1)}`,'')}${kpi('±2σ range (95%)',`${fp(L.l2)}–${fp(L.h2)}`,`width ${nf1.format(w2)}% of price`)}${kpi(`P(hit ${fp(F.T)})`,nf0.format(F.pT*100)+'%','before stop',F.pT>=.5?'up':'')}${kpi(`P(hit ${fp(F.St)})`,nf0.format(F.pS*100)+'%','before target',F.pS>=.5?'down':'')}${kpi('Monte Carlo P5 / P95',`${fp(F.q5)} / ${fp(F.q95)}`,`3,000 paths · median ${fp(F.q50)}`)}</div></div>
+  <div class="cols"><div class="group"><div class="group-h"><h2>Weekly checkpoints</h2></div><div class="tscroll"><table><thead><tr><th>Date</th><th>−2σ</th><th>−1σ</th><th>Expected</th><th>+1σ</th><th>+2σ</th></tr></thead><tbody>${cps.map(({r,i})=>`<tr${F.ev>=0&&i>=F.ev&&i-5<F.ev?' class="here"':''}><td>${fdate(r.d)} <span class="muted">H+${i+1}</span></td><td class="down">${fp(r.l2)}</td><td>${fp(r.l1)}</td><td><b>${fp(r.exp)}</b></td><td>${fp(r.h1)}</td><td class="up">${fp(r.h2)}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="group"><div class="group-h"><h2>Final price distribution</h2><span class="hint">Monte Carlo GBM</span></div><div class="group-b"><canvas id="hist" style="width:100%;display:block"></canvas></div></div></div>
+  <div class="insights">${H>40?ins('warn','!',`<b>Long horizon.</b> The ±2σ range is ${nf1.format(w2)}% of price wide — the expected value is not a firm target.`):''}${F.ev>=0?ins('info','E',`σ is raised ×${nf2.format(o.evF)} from ${fdate(F.rows[F.ev].d)} to reflect post-event volatility.`):''}${ins('info','i','GBM uses constant drift and volatility with normal returns; the Forecast Engine bootstraps historical returns plus an evidence tilt. Compare the two — a large gap means this stock’s returns are far from normal.')}</div>`}
+
+function panelEvent(){const t=label(S.ticker),N=A.N,lastD=A.bars[N-1].t,fd=F.rows.map(r=>r.d),endD=fd[fd.length-1],dv=DIV[t]||[];
+  const inH=events().filter(e=>e.d>lastD&&e.d<=endD);const y1=new Date(lastD);y1.setUTCFullYear(y1.getUTCFullYear()-1);const y1s=y1.toISOString().slice(0,10);const sumD=dv.filter(x=>x.d>y1s&&x.d<=lastD).reduce((s,x)=>s+(+x.amt||0),0);
+  return `<div class="hint">These events have well-documented causal effects on price: ex-dividend dates adjust the price mechanically, index rebalancing moves real passive-fund flows, and policy-rate decisions directly affect bank and rate-sensitive stocks.</div>
+  <div class="group"><div class="group-h"><h2>Events inside the forecast horizon</h2><span class="hint">${fdate(fd[0])} – ${fdate(endD)}</span></div><div class="group-b">${inH.length?inH.map(e=>`<div class="lv"><span>${dotS(e.k==='msci'?0:e.k==='div'?1:null)}${esc(e.t)}</span><span style="display:flex;gap:8px;align-items:center"><span class="muted">${fdate(e.d)} · H+${fd.findIndex(d=>d>=e.d)+1}</span><button class="btn ghost sm" data-evuse="${e.d}">Use in GBM</button></span></div>`).join(''):'<div class="hint">No scheduled events inside the horizon.</div>'}</div></div>
+  <div class="cols">
+  <div class="group"><div class="group-h"><h2>Dividend history — ${esc(t)}</h2><span class="hint">${sumD?`12-month yield ${nf2.format(sumD/A.last*100)}%`:'manual input'}</span></div>
+    <div class="tscroll"><table><thead><tr><th class="left">Ex-date</th><th>Rp / share</th><th>Yield</th><th></th></tr></thead><tbody>${dv.map((x,i)=>`<tr><td class="left">${x.d}</td><td>${nf2.format(+x.amt)}</td><td>${nf2.format(x.amt/A.last*100)}%</td><td><button class="btn ghost sm" data-divdel="${i}">Remove</button></td></tr>`).join('')||'<tr><td colspan="4" class="muted left">None yet. Paste known ex-dates from idx.co.id or your broker app.</td></tr>'}</tbody></table></div>
+    <div class="group-b" style="border-top:.5px solid var(--sep)"><div class="form"><div class="field"><label for="dvD">Ex-date</label><input id="dvD" type="date"></div><div class="field"><label for="dvA">Dividend (Rp/share)</label><input id="dvA" type="number" step="0.01" min="0"></div></div><button class="btn sm" id="dvAdd" style="margin-top:8px">Add dividend</button></div></div>
+  <div class="group"><div class="group-h"><h2>Custom events</h2><span class="hint">AGMs, earnings, Nov–Dec BI meetings</span></div>
+    <div class="tscroll"><table><thead><tr><th class="left">Date</th><th class="wrap">Event</th><th></th></tr></thead><tbody>${CEV.map((x,i)=>`<tr><td class="left">${x.d}</td><td class="wrap">${esc(x.t)}</td><td><button class="btn ghost sm" data-cevdel="${i}">Remove</button></td></tr>`).join('')||'<tr><td colspan="3" class="muted left">None yet.</td></tr>'}</tbody></table></div>
+    <div class="group-b" style="border-top:.5px solid var(--sep)"><div class="form"><div class="field"><label for="ceD">Date</label><input id="ceD" type="date"></div><div class="field"><label for="ceT">Event name</label><input id="ceT" maxlength="60" placeholder="e.g. Q3 earnings release"></div></div><button class="btn sm" id="ceAdd" style="margin-top:8px">Add event</button></div></div>
+  </div>
+  <div class="cols">
+  <div class="group"><div class="group-h"><h2>MSCI Index Review 2026</h2><span class="hint">official schedule</span></div><div class="tscroll"><table><thead><tr><th class="left">Announcement</th><th class="left">Effective</th><th class="left">Review</th></tr></thead><tbody>${MSCI.map(([a,e,n])=>`<tr${e>lastD&&e<=endD?' class="here"':''}><td class="left">${a}</td><td class="left">${e}</td><td class="left">${n}</td></tr>`).join('')}</tbody></table></div><div class="group-b hint">Source: MSCI.com official press releases. For MSCI Indonesia / MSCI EM constituents, passive index funds rebalance around the effective date, which can move volume and price.</div></div>
+  <div class="group"><div class="group-h"><h2>Bank Indonesia Board of Governors meetings 2026</h2><span class="hint">official schedule</span></div><div class="tscroll"><table><thead><tr><th class="left">Decision date</th><th class="left">Meeting</th></tr></thead><tbody>${BI.map(([d,n])=>`<tr${d>lastD&&d<=endD?' class="here"':''}><td class="left">${d}</td><td class="left">${n}</td></tr>`).join('')}</tbody></table></div><div class="group-b hint">Source: Bank Indonesia press releases. BI Rate decisions are announced on the second day of each meeting and directly affect bank stocks like BBRI/BBCA/BMRI. Add the Nov–Dec meetings as custom events.</div></div>
+  </div>`}
+
+function panelPlan(){const t=label(S.ticker),pos=POS.find(p=>p.t===t),lot=pos?pos.lot:10,entry=pos?pos.entry:A.last,p=A.last;
+  const shares=[.3,.35,.35];let rem=lot;const tiers=PL.tps.map((tp,i)=>{const l=i===2?rem:Math.max(0,Math.round(lot*shares[i]));rem-=l;return{...tp,l,pl:pnl(entry,tp.p,l)}});
+  const tot=tiers.reduce((s,x)=>s+x.pl,0),loss=pnl(entry,PL.cl,lot),risk=p-PL.cl,rr=(tiers.reduce((s,x,i)=>s+(x.p-p)*shares[i],0))/risk;
+  const rows=POS.map((q,i)=>{const k=keyFor(q.t),last=q.px>0?q.px:k?DATA[k].bars[DATA[k].bars.length-1].c:null,sample=!(q.px>0)&&k&&DATA[k].sample;const m=modal(q.entry,q.lot),pl=last?pnl(q.entry,last,q.lot):null;
+    return `<tr><td><input class="inline-input tk" aria-label="Ticker" id="pt${i}" data-pi="${i}" data-pf="t" value="${esc(q.t)}"></td><td><input class="inline-input" type="number" aria-label="Lots" id="pl${i}" data-pi="${i}" data-pf="lot" value="${q.lot}"></td><td><input class="inline-input" type="number" aria-label="Entry price" id="pe${i}" data-pi="${i}" data-pf="entry" value="${q.entry}"></td><td><input class="inline-input" type="number" aria-label="Manual current price" id="px${i}" data-pi="${i}" data-pf="px" value="${q.px||''}" placeholder="${last?fp(last):'–'}"></td><td>${frp(m)}</td><td>${nf2.format(bep(q.entry,q.lot))}</td><td class="${cls(pl)}">${pl==null?'–':frpS(pl)}</td><td class="${cls(pl)}">${pl==null?'–':fpc(pl/m*100,2)}</td><td>${sample?'<span class="pill warn">sample</span>':''} <button class="btn ghost sm" data-del="${i}" aria-label="Remove ${esc(q.t)}">Remove</button></td></tr>`});
+  const totM=POS.reduce((s,q)=>s+modal(q.entry,q.lot),0),totP=POS.reduce((s,q)=>{const k=keyFor(q.t),last=q.px>0?q.px:k?DATA[k].bars[DATA[k].bars.length-1].c:null;return s+(last?pnl(q.entry,last,q.lot):0)},0);
+  return `<div class="group"><div class="group-h"><h2>Trading plan ${esc(t)}</h2><span class="hint">${pos?`position ${lot} lots @ ${fp(entry)}`:'no position yet — simulating 10 lots at the current price'}</span></div>
+  <div class="kpis">${kpi('Current price',fp(p),'')}${kpi('BEP (fees 0.19% + 0.29%)',nf2.format(bep(entry,lot)),`entry ${fp(entry)}`)}${kpi('Floating P&L',frpS(pnl(entry,p,lot)),fpc(pnl(entry,p,lot)/modal(entry,lot)*100,2),cls(pnl(entry,p,lot)))}${kpi('Cut-loss',fp(PL.cl),`${fpc((PL.cl/p-1)*100)} · ${frpS(loss)}`,'down')}${kpi('Reward : Risk',isFinite(rr)&&rr>0?nf2.format(rr)+' : 1':'–','weighted average of TPs')}</div>
+  <div class="group-b"><div class="hint" style="margin-bottom:8px">Cut-loss sits below <b>${esc(PL.sup.src)}</b> (${fp(PL.sup.p)}), not a round number. Take-profit is tiered 30/35/35 at the next structural levels.</div>
+  <div class="tscroll"><table><thead><tr><th>Tier</th><th>Price</th><th>Distance</th><th>Lots</th><th>Net P&L</th><th>Level source</th></tr></thead><tbody>
+  ${tiers.map((x,i)=>`<tr><td>TP${i+1} · ${shares[i]*100}%</td><td>${fp(x.p)}</td><td class="up">${fpc((x.p/p-1)*100)}</td><td>${x.l}</td><td class="${cls(x.pl)}">${frpS(x.pl)}</td><td class="muted">${esc(x.src)}${x.asp?' <span class="pill warn">aspirational</span>':''}</td></tr>`).join('')}
+  <tr class="here"><td>Total if all TPs hit</td><td></td><td></td><td>${lot}</td><td class="${cls(tot)}">${frpS(tot)}</td><td></td></tr></tbody></table></div></div></div>
+  <div class="group"><div class="group-h"><h2>Portfolio</h2><div style="display:flex;gap:8px;align-items:center"><span class="num ${cls(totP)}"><b>${frpS(totP)}</b> (${totM?fpc(totP/totM*100,2):'–'})</span><button class="btn sm" id="addPos">Add position</button></div></div>
+  <div class="tscroll"><table><thead><tr><th>Ticker</th><th>Lots</th><th>Entry</th><th>Price now</th><th>Cost</th><th>BEP</th><th>P&L</th><th>%</th><th></th></tr></thead><tbody>${rows.join('')||'<tr><td colspan="9" class="muted">No positions yet.</td></tr>'}</tbody></table></div>
+  <div class="group-b hint">Price now is the last close of the loaded data. Fill in “Price now” to use real prices while the watchlist is still sample data. A position’s BEP line shows on the chart automatically.</div></div>`}
+
+function renderPanel(){const P={struktur:panelStruktur,pola:panelPola,engine:panelEngine,forecast:panelForecast,fib:panelFib,event:panelEvent,plan:panelPlan}[S.tab]||panelStruktur;$('#panel').innerHTML=P();if(S.tab==='forecast')drawHist()}
+function withFocus(fn){const a=document.activeElement,id=a&&a.id,ss=a&&a.selectionStart;fn();if(id){const n=document.getElementById(id);if(n&&n!==document.activeElement){n.focus();try{if(ss!=null&&n.setSelectionRange)n.setSelectionRange(ss,ss)}catch(e){}}}}
+function renderAll(){recompute();readColors();renderSide();renderChips();renderHeader();renderInspector();renderPanel();drawChart()}
+function refresh(){withFocus(()=>{recompute();renderHeader();renderInspector();renderPanel();drawChart()})}
+
+/* ---------- events ---------- */
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.dataset.k){S.ticker=t.dataset.k;hover=null;S._scrolled=true;save();renderAll();return}
+  if(t.dataset.tf){S.tf=t.dataset.tf;save();renderChips();drawChart();return}
+  if(t.dataset.tab){S.tab=t.dataset.tab;save();renderChips();renderPanel();return}
+  if(t.dataset.etab){S.etab=t.dataset.etab;save();renderPanel();return}
+  if(t.id==='sideToggle'){S.collapsed=!S.collapsed;save();applyCollapse();drawChart();return}
+  if(t.id==='resetPar'){Object.assign(S.par,PAR_DEF);Object.assign(S.ov,OV_DEF);delete S.swing[S.ticker];save();renderAll();return}
+  if(t.id==='btnImport2'){openSheet();return}
+  if(t.dataset.del!=null){POS.splice(+t.dataset.del,1);store.set('pos',POS);refresh();return}
+  if(t.dataset.evuse){S.fc.evDate=t.dataset.evuse;save();S.tab='forecast';renderChips();refresh();return}
+  if(t.dataset.divdel!=null){const k=label(S.ticker);(DIV[k]||[]).splice(+t.dataset.divdel,1);store.set('div',DIV);refresh();return}
+  if(t.dataset.cevdel!=null){CEV.splice(+t.dataset.cevdel,1);store.set('cev',CEV);refresh();return}
+  if(t.id==='dvAdd'){const d=$('#dvD').value,a=parseFloat($('#dvA').value);if(!d||!(a>0))return;const k=label(S.ticker);(DIV[k]=DIV[k]||[]).push({d,amt:a});DIV[k].sort((x,y)=>x.d<y.d?-1:1);store.set('div',DIV);refresh();return}
+  if(t.id==='ceAdd'){const d=$('#ceD').value,n=$('#ceT').value.trim();if(!d||!n)return;CEV.push({d,t:n});CEV.sort((x,y)=>x.d<y.d?-1:1);store.set('cev',CEV);refresh();return}
+  if(t.id==='macReset'){MAC=Object.assign({},MAC_DEF);store.set('macro',MAC);refresh();return}
+  if(t.id==='addPos'){POS.push({t:label(S.ticker),lot:10,entry:A.last,px:0});store.set('pos',POS);refresh();return}
+  if(t.id==='btnImport'){openSheet();return}
+  if(t.id==='impCancel'){closeSheet();return}
+  if(t.id==='impGo'){doImport();return}
+  if(t.dataset.rm){const k=t.dataset.rm;delete IMPORTED[k];delete DATA['imp:'+k];store.set('imported',IMPORTED);if(S.ticker==='imp:'+k)S.ticker='BBCA';renderImpList();renderAll();return}});
+let deb=null;const later=(ms)=>{clearTimeout(deb);deb=setTimeout(refresh,ms)};
+document.addEventListener('input',e=>{const t=e.target;
+  if(t.id==='q'){S.q=t.value;renderList();return}
+  if(t.dataset.par){let v=parseFloat(t.value);if(t.dataset.par==='weeks'){S.par.weeks=Math.max(1,v||1);const l=t.previousElementSibling;if(l)l.innerHTML=`Forecast weeks ahead: <b>${S.par.weeks}</b> (${S.par.weeks*5} trading days)`;save();later(120);return}
+    if(!isFinite(v))v=t.dataset.par==='bep'?0:PAR_DEF[t.dataset.par];S.par[t.dataset.par]=v;save();later(400);return}
+  if(t.dataset.mac&&t.tagName==='INPUT'){MAC[t.dataset.mac]=t.value===''?'':parseFloat(t.value);store.set('macro',MAC);later(400);return}
+  if(t.dataset.fund){const k=label(S.ticker);FUND[k]=FUND[k]||{};FUND[k][t.dataset.fund]=t.value===''?'':parseFloat(t.value);store.set('fund',FUND);later(400);return}
+  if(t.dataset.fc&&t.tagName==='INPUT'){const k=t.dataset.fc;let v=t.value;if(['ann','volOv','target','stop'].includes(k))v=parseFloat(v)||0;S.fc[k]=v;save();later(350);return}
+  if(t.dataset.sw){const sw=S.swing[S.ticker]=S.swing[S.ticker]||{};sw[t.dataset.sw]=parseFloat(t.value)||0;save();later(400);return}
+  if(t.dataset.pi!=null){const q=POS[+t.dataset.pi],f=t.dataset.pf;q[f]=f==='t'?t.value.toUpperCase().trim():(parseFloat(t.value)||0);store.set('pos',POS);later(450);return}});
+document.addEventListener('change',e=>{const t=e.target;
+  if(t.classList.contains('sw')&&t.dataset.ov){S.ov[t.dataset.ov]=t.checked;save();renderHeader();drawChart();if(t.dataset.ov==='scn'||t.dataset.ov==='fc')renderInspector();return}
+  if(t.tagName==='SELECT'&&t.dataset.fc){const k=t.dataset.fc;S.fc[k]=k==='evF'?parseFloat(t.value):t.value;save();refresh()}
+  if(t.tagName==='SELECT'&&t.dataset.mac){MAC[t.dataset.mac]=t.value;store.set('macro',MAC);refresh()}
+  if(t.id==='impFile'&&t.files[0]){const r=new FileReader();r.onload=()=>{$('#impText').value=r.result;if(!$('#impTk').value){const m=t.files[0].name.match(/^\^?([A-Za-z]{4})/);if(m)$('#impTk').value=m[1].toUpperCase()}};r.readAsText(t.files[0])}});
+const cv=$('#chart');let raf=0;cv.addEventListener('pointermove',e=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>showTip(e))});cv.addEventListener('pointerleave',hideTip);
+new ResizeObserver(()=>{drawChart();if(S.tab==='forecast')drawHist()}).observe($('#chartWrap'));
+const reTheme=()=>{readColors();drawChart();if(S.tab==='forecast')drawHist()};
+try{matchMedia('(prefers-color-scheme: dark)').addEventListener('change',reTheme)}catch(e){}
+new MutationObserver(reTheme).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#scrim').hidden)closeSheet()});
+
+/* ---------- import sheet ---------- */
+function renderImpList(){const ks=Object.keys(IMPORTED);$('#impList').innerHTML=ks.length?`<div class="hint" style="margin-bottom:4px">Saved:</div>`+ks.map(k=>`<div class="lv"><span><b>${esc(k)}</b> <span class="muted">${IMPORTED[k].length} days · to ${fdate(IMPORTED[k][IMPORTED[k].length-1].t)}</span></span><button class="btn ghost sm" data-rm="${esc(k)}">Remove</button></div>`).join(''):''}
+function openSheet(){$('#scrim').hidden=false;$('#impMsg').innerHTML='';renderImpList();$('#impTk').value=label(S.ticker);$('#impTk').focus()}
+function closeSheet(){$('#scrim').hidden=true;$('#btnImport').focus()}
+$('#scrim').addEventListener('click',e=>{if(e.target.id==='scrim')closeSheet()});
+function doImport(){const tk=$('#impTk').value.toUpperCase().trim().replace(/^\^/,'').replace(/[^A-Z0-9.]/g,''),txt=$('#impText').value,m=$('#impMsg');
+  if(!tk){m.innerHTML='<div class="err">Enter a ticker code first.</div>';return}
+  try{const bars=parseCSV(txt);IMPORTED[tk]=bars;DATA['imp:'+tk]={bars,sample:false,name:tk};store.set('imported',IMPORTED);S.ticker='imp:'+tk;save();
+    m.innerHTML=`<div class="ok">${bars.length} days imported (${fdate(bars[0].t)} – ${fdate(bars[bars.length-1].t)}).</div>`;renderImpList();renderAll();setTimeout(closeSheet,700)}
+  catch(err){m.innerHTML=`<div class="err">${esc(err.message)}</div>`}}
+
+document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.sec){S.sec[d.dataset.sec]=d.open;save()}},true);
+function applyCollapse(){$('#appGrid').classList.toggle('collapsed',!!S.collapsed);$('#sideToggle').setAttribute('aria-expanded',!S.collapsed)}
+applyCollapse();renderAll();
+})();
+</script>
+</body></html>

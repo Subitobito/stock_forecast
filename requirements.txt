@@ -1,0 +1,9 @@
+streamlit>=1.57
+yfinance
+pandas
+numpy
+scipy
+plotly
+scikit-learn
+xgboost
+statsmodels
