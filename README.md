@@ -135,6 +135,26 @@ tail -f idx_trend_studio/server.log                              # log
 
 Differences from Windows: child processes (the IDX sync, Streamlit) only stop automatically when the server is stopped properly; `kill -9` can leave an orphaned Deno process. The 10-minute update pauses while the Mac sleeps.
 
+## Online version (GitHub Pages)
+
+GitHub Pages only serves static files, so the workflow `.github/workflows/pages.yml` does the server's work on a schedule and publishes the results next to the page:
+
+1. Every weekday at 16:30 WIB (and on "Run workflow" in the Actions tab), GitHub Actions runs `idx_trend_studio/build_static.py`.
+2. It downloads 3 years of prices for the watchlist, trains Deep Forecast with the page's default settings (16 weeks, 200 trees, 5 folds), and writes `site/data/*.json`.
+3. It copies `static/index.html` with a `<meta name="idx-static">` tag, which makes the page read `data/` instead of `/api/`.
+
+One-time setup: **Settings → Pages → Build and deployment → Source: GitHub Actions**. The site is then at `https://<user>.github.io/stock_forecast/`.
+
+Differences from the local version: data changes once a day, "Update now" is off, Deep Forecast is only available for the watchlist with the default settings (changing them shows the default result), and the IDX-API information (dividends, foreign flow) is not included. The page is public.
+
+Test locally:
+
+```bash
+cd idx_trend_studio
+python build_static.py --only JKSE,BBRI,BBCA --out ../site
+python -m http.server 8765 --directory ../site
+```
+
 ## Local API
 
 | Endpoint | Purpose |
