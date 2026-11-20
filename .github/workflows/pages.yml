@@ -1,0 +1,64 @@
+# Publishes the IDX Trend Studio Web UI to GitHub Pages with fresh data.
+# GitHub Pages cannot run Python, so this job does what server.py would do (prices + Deep Forecast)
+# and publishes the answers as JSON files next to the page (see idx_trend_studio/build_static.py).
+#
+# One-time setup: repository Settings -> Pages -> Build and deployment -> Source: "GitHub Actions".
+name: Publish to GitHub Pages
+
+on:
+  schedule:
+    - cron: "30 9 * * 1-5"     # 16:30 WIB (09:30 UTC), Monday-Friday, after the IDX close
+  workflow_dispatch:            # "Run workflow" button in the Actions tab
+  push:
+    branches: [main]
+    paths:
+      - "idx_trend_studio/static/**"
+      - "idx_trend_studio/build_static.py"
+      - "idx_trend_studio/server.py"
+      - "idx_trend_studio/idx_source.py"
+      - "deep_forecast.py"
+      - ".github/workflows/pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install libraries
+        run: pip install yfinance pandas numpy scipy scikit-learn xgboost statsmodels
+
+      - name: Build the site (prices + Deep Forecast)
+        working-directory: idx_trend_studio
+        run: python build_static.py --out ../site
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

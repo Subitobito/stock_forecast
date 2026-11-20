@@ -21,3 +21,6 @@ idx_trend_studio/*.tmp
 Thumbs.db
 .vscode/
 .idea/
+
+# Static site built by idx_trend_studio/build_static.py (published by GitHub Actions)
+site/

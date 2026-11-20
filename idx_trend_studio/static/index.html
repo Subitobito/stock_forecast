@@ -1169,8 +1169,22 @@ document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.
 function applyCollapse(){$('#appGrid').classList.toggle('collapsed',!!S.collapsed);$('#sideToggle').setAttribute('aria-expanded',!S.collapsed)}
 /* ---------- live data from the local server (server.py -> yfinance) ---------- */
 const API_OK=location.protocol.startsWith('http');
+/* Static mode (GitHub Pages, built by build_static.py): answer the /api/ calls from JSON files published next to the page. */
+const STATIC_DIR=(document.querySelector('meta[name="idx-static"]')||{}).content||'';
+const _sj={};
+const _sget=p=>_sj[p]||(_sj[p]=fetch(STATIC_DIR+p,{cache:'no-cache'}).then(r=>{if(!r.ok)throw new Error(p+': '+r.status);return r.json()}).catch(e=>{delete _sj[p];throw e}));
+async function apiFetch(url,opt){if(!STATIC_DIR)return fetch(url,opt);
+  const u=new URL(url,location.href),q=u.searchParams,codes=(q.get('t')||'').split(',').filter(Boolean),
+    reply=(o,s)=>new Response(JSON.stringify(o),{status:s||200,headers:{'Content-Type':'application/json'}});
+  try{const p=u.pathname;
+    if(p.endsWith('/api/bars')){const j=await _sget('bars.json'),bars={};codes.forEach(c=>{if(j.bars[c])bars[c]=j.bars[c]});return reply({bars,missing:codes.filter(c=>!bars[c]),fetched:j.fetched})}
+    if(p.endsWith('/api/deep')){const c=codes[0];try{return reply(await _sget('deep/'+c+'.json'))}catch(e){return reply({error:`Deep Forecast for ${c} is not in the online version (only the watchlist is published)`},404)}}
+    if(p.endsWith('/api/idx')){const j=await _sget('idx.json'),info={};codes.forEach(c=>{if(j.info&&j.info[c])info[c]=j.info[c]});return reply({info,market:j.market||{},db:j.db||{}})}
+    if(p.endsWith('/api/status')){const j=await _sget('status.json');return reply({...j,running:false})}
+    return reply({ok:true})}
+  catch(e){return reply({error:'online data not available: '+e.message},502)}}
 const setStatus=(t,bad)=>{const n=$('#dataStatus');if(n){n.textContent=t;n.style.color=bad?'var(--down)':''}};
-async function fetchBars(codes,refresh){const r=await fetch('/api/bars?years=3&t='+encodeURIComponent(codes.join(','))+(refresh?'&refresh=1':''));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}
+async function fetchBars(codes,refresh){const r=await apiFetch('/api/bars?years=3&t='+encodeURIComponent(codes.join(','))+(refresh?'&refresh=1':''));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}
 async function loadLive(force,silent){if(!API_OK){setStatus('Data: sample (open this page through server.py, not as a file)',true);return}
   if(!silent)setStatus('Downloading prices from Yahoo Finance…');
   try{const j=await fetchBars(WATCH.map(w=>w[0]),force);let n=0;
@@ -1301,7 +1315,7 @@ async function loadDeep(force){const k=deepKey();clearTimeout(deepPoll);
   const o=DS,url=`/api/deep?t=${encodeURIComponent(label(S.ticker))}&weeks=${S.par.weeks}&band=${S.par.band}&trees=${o.trees}&folds=${o.folds}&rf=${+o.rf}&xgb=${+o.xgb}&sx=${+o.sx}&p=${o.p}&d=${o.d}&q=${o.q}&sea=${+o.sea}${force?'&refresh=1':''}`;
   if(!DEEP[k]||force)DEEP[k]={state:'running',elapsed:0,at:Date.now()};
   if(S.tab==='deep')withFocus(renderPanel);
-  try{const r=await fetch(url),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);DEEP[k]=Object.assign(j,{at:Date.now()});
+  try{const r=await apiFetch(url),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);DEEP[k]=Object.assign(j,{at:Date.now()});
     if(j.state==='running')deepPoll=setTimeout(()=>{if(k===deepKey())loadDeep(false)},2500)}
   catch(e){DEEP[k]={state:'error',error:e.message,at:Date.now()}}
   if(k===deepKey()){if(S.tab==='deep')withFocus(renderPanel);renderHeader();renderInspector();drawChart()}}
@@ -1323,7 +1337,7 @@ function panelDeep(){const d=DEEP[deepKey()],R=DR(),H=S.par.weeks*5;
   if(!R)return ctl;
   if(!R.ok)return ctl+ins('warn','!',esc(R.error||'Deep Forecast did not run.'));
   const M=R.models||{},E2=R.ensemble,sx=R.sarimax,eng=E.scen,pc=v=>nf0.format(v*100)+'%',top=E2||Object.values(M)[0];
-  const stale=R.horizon!==H?ins('warn','!',`These results are for ${R.horizon} days; the sidebar horizon is now ${H}. Retraining…`):'';
+  const stale=R.horizon!==H?ins('warn','!',`These results are for ${R.horizon} days; the sidebar horizon is now ${H}. ${STATIC_DIR?'The online version only has results for the default settings.':'Retraining…'}`):'';
   const rows=Object.entries(M).map(([n,m])=>{const cv=m.cv||{};return `<tr><td class="left">${esc(n)}</td><td class="${cls(m.ret)}">${fpc(m.ret*100)}</td><td>${fp(m.target)}</td><td>${fp(m.lo)} – ${fp(m.hi)}</td><td>${pc(m.probs.bull)} / ${pc(m.probs.side)} / ${pc(m.probs.bear)}</td>
       <td class="${cv.skill_pct==null?'muted':cls(cv.skill_pct)}">${cv.skill_pct==null?'n/a':(cv.skill_pct>0?'+':'')+nf0.format(cv.skill_pct)+'%'}</td><td>${cv.dir_acc==null?'n/a':pc(cv.dir_acc)}</td><td>${cv.clf_acc==null?'n/a':pc(cv.clf_acc)+' <span class="muted">('+pc(cv.clf_base_acc)+')</span>'}</td><td>${cv.folds||0}</td></tr>`}).join('');
   const eRow=E2&&Object.keys(M).length>1?`<tr class="here"><td class="left">Ensemble (mean)</td><td class="${cls(E2.ret)}">${fpc(E2.ret*100)}</td><td>${fp(E2.target)}</td><td>${fp(E2.lo)} – ${fp(E2.hi)}</td><td>${pc(E2.probs.bull)} / ${pc(E2.probs.side)} / ${pc(E2.probs.bear)}</td><td></td><td></td><td></td><td></td></tr>`:'';
@@ -1340,7 +1354,7 @@ function panelDeep(){const d=DEEP[deepKey()],R=DR(),H=S.par.weeks*5;
 
 async function loadIdx(){if(!API_OK)return false;
   try{const codes=[...new Set([...WATCH.map(w=>w[0]),label(S.ticker)].filter(t=>t&&t!=='JKSE'))];
-    const r=await fetch('/api/idx?t='+codes.join(',')),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
+    const r=await apiFetch('/api/idx?t='+codes.join(',')),j=await r.json();if(!r.ok)throw new Error(j.error||r.status);
     IDXI=j.info||{};IDXM=j.market||{};IDXDB=j.db||null;refresh();return true}catch(e){return false}}
 let ST=null,lastV=null,auto=store.get('auto',true),pollT=null;
 function renderPipe(){const bar=$('#pipeBar');if(!bar)return;
@@ -1348,20 +1362,21 @@ function renderPipe(){const bar=$('#pipeBar');if(!bar)return;
   if(!ST||!ST.steps||!ST.steps.length){bar.textContent=ST&&ST.error?'Auto-update disabled on the server':'Auto-update: connecting…';return}
   const c={ok:'ok',run:'run',err:'err',warn:'warn'};
   bar.innerHTML=ST.steps.map(s=>`<span title="${esc(s.detail)}"><i class="pd ${c[s.state]||''}"></i>${esc(s.label)} <span class="muted">${esc(s.state==='run'?s.detail:(s.at?s.at.slice(0,5)+' · ':'')+s.detail)}</span></span>`).join('<span class="muted">→</span>')
-    +`<span class="muted">· ${ST.market_open?'market open':'market closed'} · next ${ST.next_run||'–'}${auto?'':' · paused'}</span>`+(ST.app?` <a href="${esc(ST.app.url)}" target="_blank" rel="noopener" title="${esc(ST.app.file)}">Streamlit v${esc(ST.app.version)} ↗</a>`:'');
-  const b=$('#btnUpdateNow');if(b)b.disabled=!!ST.running}
+    +(ST.static?`<span class="muted">· online copy · built ${esc(ST.built||'–')} · rebuilt every trading day after the close</span>`
+    :`<span class="muted">· ${ST.market_open?'market open':'market closed'} · next ${ST.next_run||'–'}${auto?'':' · paused'}</span>`)+(ST.app?` <a href="${esc(ST.app.url)}" target="_blank" rel="noopener" title="${esc(ST.app.file)}">Streamlit v${esc(ST.app.version)} ↗</a>`:'');
+  const b=$('#btnUpdateNow');if(b)b.disabled=!!ST.running||!!ST.static}
 async function pollStatus(){clearTimeout(pollT);let delay=15000;
-  try{if(API_OK&&auto&&!document.hidden){ST=await (await fetch('/api/status')).json();renderPipe();delay=ST.running?3000:15000;
+  try{if(API_OK&&auto&&!document.hidden){ST=await (await apiFetch('/api/status')).json();renderPipe();delay=ST.running?3000:15000;
     if(ST.versions&&lastV){if(ST.versions.prices!==lastV.prices){lastV.prices=ST.versions.prices;await loadLive(false,true)}
       if(ST.versions.idx!==lastV.idx){lastV.idx=ST.versions.idx;await loadIdx()}}else if(ST.versions)lastV={...ST.versions}}}
   catch(e){}
   pollT=setTimeout(pollStatus,delay)}
 $('#autoUpd').checked=auto;
 $('#autoUpd').addEventListener('change',e=>{auto=e.target.checked;store.set('auto',auto);renderPipe();if(auto)pollStatus()});
-$('#btnUpdateNow').addEventListener('click',async()=>{try{await fetch('/api/refresh',{method:'POST'})}catch(e){}pollStatus()});
+$('#btnUpdateNow').addEventListener('click',async()=>{try{await apiFetch('/api/refresh',{method:'POST'})}catch(e){}pollStatus()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&auto)pollStatus()});
 applyCollapse();renderAll();
-(async()=>{if(API_OK){try{ST=await (await fetch('/api/status')).json();if(ST.versions)lastV={...ST.versions};renderPipe()}catch(e){}}
+(async()=>{if(API_OK){try{ST=await (await apiFetch('/api/status')).json();if(ST.versions)lastV={...ST.versions};renderPipe()}catch(e){}}
   await loadLive(false);await loadIdx();pollStatus()})();
 })();
 </script>
