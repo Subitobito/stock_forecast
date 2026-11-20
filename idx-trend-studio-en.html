@@ -607,12 +607,12 @@ const bep=(e,lot)=>modal(e,lot)/(lot*100*(1-FEE_S));
 const pnl=(e,x,lot)=>x*lot*100*(1-FEE_S)-modal(e,lot);
 
 /* ---------- state ---------- */
-const OV_DEF={ema:true,fibS:true,fibM:false,zones:true,trend:false,cyc:true,pat:false,scn:true,fc:false,mc:false,ev:true,vol:true};
+const OV_DEF={ema:true,fibS:true,fibM:false,zones:true,trend:false,cyc:false,pat:false,scn:true,fc:false,mc:false,ev:true,vol:true};
 const PAR_DEF={weeks:16,pivot:6,tol:1.8,tilt:50,band:0.5,wR:40,wT:35,wF:25,bep:0};
 const FC_DEF={drift:'hist',ann:8,volOv:0,evDate:'',evF:1.15,target:0,stop:0};
 const saved=store.get('ui2en',{});
 const S={ticker:saved.ticker||'BBCA',tf:saved.tf&&TF[saved.tf]?saved.tf:'6M',tab:saved.tab||'struktur',ov:Object.assign({},OV_DEF,saved.ov),par:Object.assign({},PAR_DEF,saved.par),fc:Object.assign({},FC_DEF,saved.fc),swing:saved.swing||{},etab:saved.etab||'reg',q:'',sec:saved.sec||{},collapsed:!!saved.collapsed};
-let POS=store.get('pos',[{t:'BBCA',lot:150,entry:6375,px:0},{t:'BBRI',lot:60,entry:2848,px:0}]);
+let POS=store.get('pos',[]);
 let DIV=store.get('div',{}),CEV=store.get('cev',[]);
 if(!DATA[S.ticker])S.ticker='BBCA';
 let A=null,F=null,PL=null,E=null,hover=null;
