@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" id="vp" content="width=device-width,initial-scale=1,viewport-fit=cover"><script>/* Desktop mode on a phone (chosen with the button, kept in this browser): render the desktop layout 1280px wide, fitted to the screen. */(function(){try{if(localStorage.getItem("its.view")==='"desktop"'&&Math.min(screen.width,screen.height)<900){var s=Math.min(1,(window.innerWidth||screen.width)/1280).toFixed(3);document.getElementById("vp").setAttribute("content","width=1280,initial-scale="+s+",minimum-scale="+s+",maximum-scale=5,viewport-fit=cover");document.documentElement.classList.add("forced-desktop")}}catch(e){}})()</script></head><body>
 <title>IDX Trend Studio English</title>
 <style>
 /* Layout: a single macOS window — translucent source-list sidebar, unified toolbar, chart canvas, segmented tabs below, inspector column on the right. */
@@ -318,6 +318,11 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-chg.up{background:var(--up-soft)} .m-chg.down{background:var(--down-soft)}
   .m-src{position:absolute;top:var(--g3);right:var(--g3)}
   .m-chev{color:var(--fg3);display:grid;place-items:center;flex:none}
+  .m-note{display:flex;align-items:center;gap:var(--g2);margin:0 var(--g3) var(--g3);padding:var(--g2) var(--g3);border-radius:var(--g2);background:var(--info-soft);color:var(--accent-ink);font-size:var(--fs1)}
+  .m-note svg{flex:none}
+  .m-note span{flex:1;min-width:0}
+  .m-notebtn{flex:none;border:0;border-radius:var(--g1);padding:var(--g1) var(--g2);background:var(--accent);color:#fff;font:600 var(--fs1) var(--sans);cursor:pointer}
+  .m-notebtn:focus-visible{outline:3px solid var(--accent-soft)}
   .m-tick .m-chev{grid-row:1;grid-column:2}
 
   .titlebar{display:none}
@@ -335,7 +340,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   /* content column */
   .main2{background:transparent;padding:0 var(--g3);overflow:visible;display:flex;flex-direction:column;gap:var(--g3)}
   .toprow{display:block;height:auto;border:0}
-  .chartcol{background:var(--pane);border:.5px solid var(--sep);border-radius:var(--g4);overflow:hidden;padding-bottom:var(--g1)}
+  .chartcol{background:transparent;border:0;border-radius:0;overflow:hidden;padding-bottom:var(--g1)}
   .chart-head{padding:var(--g1) var(--g1) 0 0}
   .cyc-title{font-size:var(--fs1);padding:var(--g3) var(--g3) 0}
   .modebar{margin:var(--g1) 0 2px var(--g2)}
@@ -403,7 +408,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 </style>
 
 <div class="window land" id="win">
-  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><p class="m-note m-only" role="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Use the desktop mode for better experience</span><button class="m-notebtn" id="mDesk">Desktop mode</button></p><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
   <header class="titlebar">
     <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <button class="icon-btn" id="sideToggle" aria-label="Show or hide the customisation menu" aria-controls="side" aria-expanded="true"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 1v12" stroke="currentColor" stroke-width="1.5"/></svg></button>
@@ -419,7 +424,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
         <button data-tf="3M">3M</button><button data-tf="6M">6M</button><button data-tf="1Y">1Y</button><button data-tf="2Y">2Y</button>
       </div>
       <button class="btn" id="btnRefresh" title="Re-download prices from Yahoo Finance via the local server">Refresh data</button>
-      <button class="btn" id="btnImport">Import CSV…</button>
+      <button class="btn" id="btnImport">Import CSV…</button><button class="btn primary" id="btnMobileView" hidden>Mobile mode</button>
     </div>
   </header>
 
@@ -1316,6 +1321,7 @@ function renderMobile(){if(!A||!E)return;const N=A.N,t=label(S.ticker),ch=(A.las
   $('#mPtitle').textContent=MTAB[S.tab]||''}
 function mOpenTab(k){const b=document.querySelector(`#tabSeg [data-tab="${k}"]`);if(b)b.click();mActive(k);requestAnimationFrame(()=>{const el=$('#mPtitle');if(el)el.scrollIntoView({behavior:mSmooth(),block:'start'})})}
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.id==='mDesk'||t.id==='btnMobileView'){store.set('view',t.id==='mDesk'?'desktop':'auto');location.reload();return}
   if(t.id==='mMenu'||t.id==='mTick'){setDrawer(!$('#appGrid').classList.contains('m-open'));return}
   if(t.id==='mPrev'||t.id==='mNext'){const bar=$('#mTabbar');bar.scrollBy({left:(t.id==='mNext'?1:-1)*bar.clientWidth,behavior:mSmooth()});return}
   if(t.dataset.mtab){mOpenTab(t.dataset.mtab);return}
@@ -1327,6 +1333,7 @@ addEventListener('scroll',()=>{if(!MOB.matches)return;const pt=$('#mPtitle').get
 try{MOB.addEventListener('change',()=>{setDrawer(false);drawChart()})}catch(e){}
 $('#mTabbar').addEventListener('scroll',mArrows,{passive:true});addEventListener('resize',mArrows);
 mActive('overview');mArrows();
+if(document.documentElement.classList.contains('forced-desktop'))$('#btnMobileView').hidden=false;
 function applyCollapse(){$('#appGrid').classList.toggle('collapsed',!!S.collapsed);$('#sideToggle').setAttribute('aria-expanded',!S.collapsed)}
 /* ---------- live data from the local server (server.py -> yfinance) ---------- */
 const API_OK=location.protocol.startsWith('http');
