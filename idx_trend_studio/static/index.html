@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" id="vp" content="width=device-width,initial-scale=1,viewport-fit=cover"><script>/* Phones and small tablets get the desktop layout at 1280px wide, fitted to the screen; pinch to zoom in or out. */(function(){try{if(Math.min(screen.width,screen.height)<900){var s=Math.min(1,(window.innerWidth||screen.width)/1280).toFixed(3);document.getElementById("vp").setAttribute("content","width=1280,initial-scale="+s+",minimum-scale="+s+",maximum-scale=5,viewport-fit=cover")}}catch(e){}})()</script></head><body>
+<html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"></head><body>
 <title>IDX Trend Studio English</title>
 <style>
 /* Layout: a single macOS window — translucent source-list sidebar, unified toolbar, chart canvas, segmented tabs below, inspector column on the right. */
@@ -281,9 +281,130 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 @media (max-width:760px){.window.land{height:auto;min-height:0}.app2{grid-template-columns:minmax(0,1fr)}.app2.collapsed{grid-template-columns:minmax(0,1fr)}.app2.collapsed .side{display:none}
   .side{border-right:0;border-bottom:.5px solid var(--sep);overflow:visible}.main2{overflow:visible}.toprow .chart-wrap{height:400px}.main2 .tabs{position:static}}
 .main2>*{flex-shrink:0}.summary>*{flex-shrink:0}.side>*{flex-shrink:0}
+
+/* ---------- phone layout (<=760px), built from the same colour tokens as the desktop ----------
+   Golden-ratio system: spacing and radii are Fibonacci numbers (5 8 13 21 34 55) and type steps by sqrt(phi) = 1.272 from 14px.
+   Box heights follow their content so no card is left half empty. */
+.m-only{display:none}
+@media (max-width:760px){
+  :root{--g1:5px;--g2:8px;--g3:13px;--g4:21px;--g5:34px;--g6:55px;
+        --fs1:11px;--fs2:14px;--fs3:18px;--fs4:23px;--fs5:29px;--phi:1.618;--phi2:2.618}
+  body{padding:0;padding-block:0;padding-bottom:calc(var(--g6) + var(--g3) + env(safe-area-inset-bottom,0px));background:var(--desk);font-size:var(--fs2)}
+  .window,.window.land{max-width:560px;margin:0 auto;border-radius:0;box-shadow:none;background:transparent;height:auto;min-height:0;overflow:visible}
+
+  /* header */
+  .m-head{display:flex;align-items:center;gap:var(--g3);padding:calc(var(--g3) + env(safe-area-inset-top,0px)) max(var(--g3),env(safe-area-inset-right,0px)) var(--g3) max(var(--g3),env(safe-area-inset-left,0px))}
+  .m-logo{width:var(--g5);height:var(--g5);border-radius:var(--g2);display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);flex:none}
+  .m-logo svg{width:var(--g4);height:var(--g4)}
+  .m-brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .m-brand b{font:700 var(--fs3)/1.2 var(--display);letter-spacing:-.01em}
+  .m-brand span{font-size:var(--fs1);color:var(--fg2)}
+  .m-iconbtn{width:44px;height:44px;border-radius:var(--g3);border:.5px solid var(--sep);background:var(--pane);color:var(--fg);display:grid;place-items:center;cursor:pointer;flex:none}
+  .m-iconbtn svg{width:var(--g4);height:var(--g4)}
+
+  /* ticker card */
+  .m-tick{display:grid;grid-template-columns:var(--g6) minmax(0,1fr) auto;align-items:center;column-gap:var(--g3);row-gap:var(--g3);position:relative;margin:0 var(--g3) var(--g3);width:calc(100% - 2*var(--g3));padding:var(--g4);border-radius:var(--g4);border:.5px solid var(--sep);background:linear-gradient(135deg,var(--accent-soft),transparent 62%),var(--pane);text-align:left;cursor:pointer;color:inherit;font:inherit}
+  .m-ohlc{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--g2);padding-top:var(--g3);border-top:.5px solid var(--sep)}
+  .m-ohlc span{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .m-ohlc i{font-style:normal;font-size:var(--fs1);color:var(--fg3)}
+  .m-ohlc b{font:600 var(--fs2) var(--display);font-variant-numeric:tabular-nums}
+  .m-av{width:var(--g6);height:var(--g6);border-radius:var(--g3);display:grid;place-items:center;background:var(--accent);color:#fff;font:700 var(--fs3) var(--display);flex:none}
+  .m-tkb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .m-tkb b{font:700 var(--fs4)/1.2 var(--display)}
+  .m-name{font-size:var(--fs1);color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .m-name:empty{display:none}
+  .m-pxrow{display:flex;align-items:center;gap:var(--g2);flex-wrap:wrap;margin-top:var(--g1)}
+  .m-px{font:700 var(--fs5)/1.1 var(--display);font-variant-numeric:tabular-nums}
+  .m-chg{font-size:var(--fs1);font-weight:600;padding:3px var(--g2);border-radius:var(--g1);font-variant-numeric:tabular-nums}
+  .m-chg.up{background:var(--up-soft)} .m-chg.down{background:var(--down-soft)}
+  .m-src{position:absolute;top:var(--g3);right:var(--g3)}
+  .m-chev{color:var(--fg3);display:grid;place-items:center;flex:none}
+  .m-tick .m-chev{grid-row:1;grid-column:3}
+
+  .titlebar{display:none}
+
+  /* settings drawer */
+  #appGrid{display:block}
+  #appGrid .side{display:flex;position:fixed;top:0;bottom:0;left:0;z-index:60;width:min(86vw,340px);overflow-y:auto;overscroll-behavior:contain;
+    padding:calc(var(--g3) + env(safe-area-inset-top,0px)) var(--g2) calc(var(--g4) + env(safe-area-inset-bottom,0px)) max(var(--g2),env(safe-area-inset-left,0px));
+    background:var(--win);border:0;border-right:.5px solid var(--sep);box-shadow:0 0 40px rgba(0,0,0,.5);transform:translateX(-105%);visibility:hidden;transition:transform .22s ease,visibility 0s .22s}
+  #appGrid.m-open .side{transform:none;visibility:visible;transition:transform .22s ease}
+  #appGrid .wl-item{grid-template-columns:1fr auto;width:100%}
+  .m-scrim{position:fixed;inset:0;z-index:55;background:rgba(0,0,0,.5)}
+  body.m-lock{overflow:hidden}
+
+  /* content column */
+  .main2{background:transparent;padding:0 var(--g3);overflow:visible;display:flex;flex-direction:column;gap:var(--g3)}
+  .toprow{display:block;height:auto;border:0}
+  .chartcol{background:var(--pane);border:.5px solid var(--sep);border-radius:var(--g4);overflow:hidden;padding-bottom:var(--g1)}
+  .chart-head{padding:var(--g1) var(--g1) 0 0}
+  .cyc-title{font-size:var(--fs1);padding:var(--g3) var(--g3) 0}
+  .modebar{margin:var(--g1) 0 2px var(--g2)}
+  .toprow .chart-wrap{height:auto;aspect-ratio:var(--phi)/1;max-height:70vh;margin:var(--g1) 0 0}
+  .toprow .chart-wrap.m-ind{aspect-ratio:1.272/1}   /* room for the RSI / MACD panel */
+  .indbar{padding:var(--g1) var(--g3);font-size:var(--fs1)}
+  .legend{flex-wrap:nowrap;overflow-x:auto;padding:var(--g1) var(--g3);scrollbar-width:none;font-size:var(--fs1)}
+  .legend span{flex:none}
+  .toprow .summary,.main2 .tabs,.footer{display:none}
+
+  .m-stat,.m-engine{border:.5px solid var(--sep);background:var(--pane);color:inherit;text-align:left;cursor:pointer;font:inherit}
+  .m-ic{width:var(--g5);height:var(--g5);border-radius:var(--g2);display:grid;place-items:center;flex:none}
+  .m-ic.acc{background:var(--accent-soft);color:var(--accent-ink)}
+  .m-ic.up{background:var(--up-soft);color:var(--up)}
+  .m-ic.warn{background:var(--warn-soft);color:var(--warn)}
+  .m-ic.info{background:var(--info-soft);color:var(--accent-ink)}
+  .m-ic.vio{background:color-mix(in srgb,var(--violet) 18%,transparent);color:var(--violet)}
+
+  /* indicator tiles */
+  .m-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--g2)}
+  .m-stat{min-width:0;padding:var(--g3);border-radius:var(--g3);display:flex;flex-direction:column;gap:var(--g1)}
+  .m-sh{display:flex;align-items:center;gap:var(--g1);font-size:var(--fs1);color:var(--fg2);min-width:0}
+  .m-ss{font-size:var(--fs1);color:var(--fg3);line-height:1.3}
+  .m-stat .m-ic{width:var(--g4);height:var(--g4);border-radius:var(--g1)}
+  .m-stat b{font:700 clamp(15px,4.6vw,var(--fs3))/1.2 var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .m-stat b.up{color:var(--up)}.m-stat b.down{color:var(--down)}.m-stat b.warn{color:var(--warn)}
+
+  /* forecast engine */
+  .m-engine{display:flex;flex-direction:column;align-items:stretch;gap:var(--g1);padding:var(--g4);border-radius:var(--g4);background:linear-gradient(135deg,var(--accent-soft),transparent 62%),var(--pane)}
+  .m-engine .m-ic{width:var(--g4);height:var(--g4);border-radius:var(--g1)}
+  .m-plab{display:flex;justify-content:space-between;font-size:var(--fs1);color:var(--fg2);font-variant-numeric:tabular-nums}
+  .m-plab .up{color:var(--up)}.m-plab .down{color:var(--down)}
+  .m-kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--g2);margin:var(--g2) 0 var(--g1);padding-top:var(--g3);border-top:.5px solid var(--sep)}
+  .m-kv:empty{display:none}
+  .m-kv span{display:flex;flex-direction:column;gap:2px;min-width:0}
+  .m-kv i{font-style:normal;font-size:var(--fs1);color:var(--fg3)}
+  .m-kv b{font:600 var(--fs2) var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
+  .m-kv b.up{color:var(--up)}.m-kv b.down{color:var(--down)}
+  .m-eh{display:flex;align-items:center;gap:var(--g2);font:600 var(--fs2) var(--display)}
+  .m-range{font:700 var(--fs4)/1.15 var(--display);font-variant-numeric:tabular-nums}
+  .m-esub{font-size:var(--fs1);color:var(--fg2)}
+  .m-pbar{display:flex;height:var(--g1);border-radius:3px;overflow:hidden;margin:var(--g1) 0 2px;background:var(--fill2)}
+  .m-pbar i{display:block;height:100%}.m-pbar .b{background:var(--up)}.m-pbar .n{background:var(--fg3)}.m-pbar .s{background:var(--down)}
+  .m-disc{font-size:var(--fs1);color:var(--fg3)}
+
+  .m-status{display:flex;align-items:center;gap:var(--g1) var(--g3);flex-wrap:wrap;padding:var(--g3);border-radius:var(--g3);background:var(--pane);border:.5px solid var(--sep);font-size:var(--fs1);color:var(--fg2)}
+  .m-status .pd{margin:0}.m-status .pd.ok{background:var(--up)}.m-status .pd.err{background:var(--down)}
+  #mStatusTxt{flex:1 1 200px;min-width:0}
+  .m-fee{color:var(--fg3)}
+  .m-ptitle{display:block;font:700 var(--fs4) var(--display);margin:var(--g2) 0 calc(-1*var(--g1));scroll-margin-top:var(--g3)}
+  .panel{padding:0 0 var(--g4);background:transparent}
+
+  /* bottom bar: 55px */
+  .m-tabbar{display:flex;align-items:stretch;position:fixed;left:0;right:0;bottom:0;z-index:50;min-height:var(--g6);background:var(--toolbar);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border-top:.5px solid var(--sep);padding:var(--g1) max(var(--g2),env(safe-area-inset-right,0px)) calc(var(--g1) + env(safe-area-inset-bottom,0px)) max(var(--g2),env(safe-area-inset-left,0px))}
+  .m-tabs{flex:1;min-width:0;display:flex;position:relative;overflow-x:auto;overscroll-behavior-x:contain;scroll-snap-type:x mandatory;scrollbar-width:none}
+  .m-tabs::-webkit-scrollbar{display:none}
+  .m-arrow{flex:0 0 var(--g5);border:0;background:transparent;color:var(--fg);display:grid;place-items:center;cursor:pointer;border-radius:var(--g2)}
+  .m-arrow:disabled{color:var(--fg3);opacity:.35;cursor:default}
+  .m-tabs button{flex:0 0 20%;scroll-snap-align:start;white-space:nowrap;padding:var(--g1) 0;border:0;background:transparent;color:var(--fg2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:var(--fs1);font-weight:500;cursor:pointer;border-radius:var(--g2)}
+  .m-tabs button[aria-current="page"]{color:var(--accent-ink);background:var(--accent-soft)}
+  .m-stat:focus-visible,.m-engine:focus-visible,.m-tick:focus-visible,.m-iconbtn:focus-visible,.m-tabbar button:focus-visible{outline:3px solid var(--accent-soft);box-shadow:0 0 0 1px var(--accent)}
+}
+@media (max-width:360px){.m-stats{grid-template-columns:1fr}}
+@media (max-width:760px) and (prefers-reduced-motion:reduce){#appGrid .side,#appGrid.m-open .side{transition:none}}
 </style>
 
 <div class="window land" id="win">
+  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-av" id="mAv">–</span><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
   <header class="titlebar">
     <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <button class="icon-btn" id="sideToggle" aria-label="Show or hide the customisation menu" aria-controls="side" aria-expanded="true"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 1v12" stroke="currentColor" stroke-width="1.5"/></svg></button>
@@ -318,6 +439,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
         </div>
         <aside class="summary" id="summary" aria-label="Signal summary"></aside>
       </div>
+      <div class="m-stats m-only" id="mStats"><button class="m-stat" data-mstat="rsi"><span class="m-sh"><span class="m-ic vio"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 15l4-5 4 3 4-6 6 7"/></svg></span>RSI 14</span><b id="mRsi">–</b><span class="m-ss" id="mRsiS"></span></button><button class="m-stat" data-mstat="macd"><span class="m-sh"><span class="m-ic up"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19v-6M10 19V9M15 19v-4M20 19V6"/></svg></span>MACD</span><b id="mMacd">–</b><span class="m-ss" id="mMacdS"></span></button><button class="m-stat" data-mstat="trend"><span class="m-sh"><span class="m-ic acc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19L19 5"/><path d="M10 5h9v9"/></svg></span>Trend</span><b id="mTrend">–</b><span class="m-ss" id="mTrendS"></span></button></div><button class="m-engine m-only" data-mtab="engine"><span class="m-eh"><span class="m-ic acc"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M12 15l4-5"/><circle cx="12" cy="15" r="1.3"/></svg></span>Forecast engine <span class="pill" id="mVerdict"></span></span><b class="m-range" id="mRange">–</b><span class="m-esub" id="mEsub"></span><span class="m-pbar" id="mPbar" role="img"></span><span class="m-plab" id="mPlab"></span><span class="m-kv" id="mKv"></span><span class="m-disc">Model estimate, not investment advice.</span></button><div class="m-status m-only"><i class="pd" id="mDot"></i><span id="mStatusTxt">Loading data…</span><span class="m-fee">IDX fees: buy 0.19% · sell 0.29%</span></div><h2 class="m-ptitle m-only" id="mPtitle"></h2>
       <nav class="tabs">
         <div class="seg" id="tabSeg" role="tablist" aria-label="Analysis">
           <button data-tab="struktur">Market Structure</button>
@@ -339,6 +461,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   </footer>
 </div>
 
+<nav class="m-tabbar m-only" aria-label="Sections"><button class="m-arrow" id="mPrev" aria-label="Show previous sections" disabled><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button><div class="m-tabs" id="mTabbar"><button data-mgo="overview"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7"/><path d="M6 10v10h12V10"/></svg><span>Overview</span></button><button data-mtab="struktur"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v-5M12 16V7M17 16v-8"/></svg><span>Structure</span></button><button data-mtab="pola"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 17l5-6 4 4 4-7 5 5"/><circle cx="8" cy="11" r="1.2"/><circle cx="16" cy="8" r="1.2"/></svg><span>Patterns</span></button><button data-mtab="engine"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 15a8 8 0 0 1 16 0"/><path d="M12 15l4-5"/><circle cx="12" cy="15" r="1.3"/></svg><span>Engine</span></button><button data-mtab="forecast"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 18c3 0 4-11 9-11s6 11 9 11"/><path d="M12 7v11" stroke-dasharray="2 2"/></svg><span>GBM</span></button><button data-mtab="fib"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16M4 9.5h16M4 13h16M4 19h16"/><path d="M6 19L18 5"/></svg><span>Fib &amp; S/R</span></button><button data-mtab="deep"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="2"/><path d="M9 2v4M15 2v4M9 18v4M15 18v4M2 9h4M2 15h4M18 9h4M18 15h4"/><path d="M9.5 14.5v-2M12 14.5v-5M14.5 14.5v-3"/></svg><span>Deep ML</span></button><button data-mtab="event"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3.5" y="5" width="17" height="15" rx="2"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg><span>Events</span></button><button data-mtab="plan"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 13h18"/></svg><span>Portfolio</span></button></div><button class="m-arrow" id="mNext" aria-label="Show more sections"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></nav><div class="m-scrim" id="mScrim" hidden></div>
 <div class="scrim" id="scrim" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="impTitle">
     <h2 id="impTitle">Import OHLC data</h2>
@@ -733,13 +856,14 @@ let C={};function readColors(){const cs=getComputedStyle(document.documentElemen
 let G=null;const FNS=()=>(S.ov.fc||S.ov.scn||S.ov.deep)?E.H:0;const V={key:null,x0:null,x1:null,y0:null,y1:null},MB={mode:'zoom'};let drag=null;
 function niceTicks(lo,hi,n){const span=hi-lo,step0=span/n,mag=Math.pow(10,Math.floor(Math.log10(step0))),f=step0/mag,step=(f<1.5?1:f<3?2:f<7?5:10)*mag,o=[];for(let v=Math.ceil(lo/step)*step;v<=hi;v+=step)o.push(v);return o}
 function drawChart(){
-  const cv=$('#chart'),wrap=$('#chartWrap'),W=wrap.clientWidth,Hh=wrap.clientHeight,dpr=window.devicePixelRatio||1;if(!W)return;
+  const cv=$('#chart'),wrap=$('#chartWrap');wrap.classList.toggle('m-ind',S.ind!=='none');const W=wrap.clientWidth,Hh=wrap.clientHeight,dpr=window.devicePixelRatio||1;if(!W)return;const NARROW=W<560;   // phone: fewer and shorter labels
   cv.width=W*dpr;cv.height=Hh*dpr;const x=cv.getContext('2d');x.setTransform(dpr,0,0,dpr,0,0);x.clearRect(0,0,W,Hh);
   const ff=getComputedStyle(document.body).fontFamily;
   const bars=A.bars,N=A.N,Fn=FNS();
   const vk=S.ticker+'|'+S.tf;if(V.key!==vk){V.key=vk;V.x0=V.x1=V.y0=V.y1=null}
   const dx0=Math.max(0,N-TF[S.tf]),vx0=V.x0!=null?V.x0:dx0,vx1=V.x1!=null?V.x1:N+Fn,s=Math.max(0,Math.floor(vx0)),eN=Math.min(N,Math.ceil(vx1)),slots=vx1-vx0;
-  const padL=6,padR=62,top=8,gap=20;const pn=S.ind==='none'?[]:S.ind==='both'?(Hh>=420?['rsi','macd']:['rsi']):[S.ind],nP=pn.length,subH=nP>1?Math.round(Hh*.13):Math.round(Hh*(Hh>=420?.2:.16));
+  const AXL=matchMedia('(max-width:760px)').matches,FS=AXL?Math.max(.78,Math.min(1,W/620)):1,fz=(w,p)=>w+Math.max(8,p*FS).toFixed(1)+'px '+ff,padL=AXL?46:6,padR=AXL?8:(NARROW?52:62),top=8,gap=20;   // phone layout: price axis on the left
+  const axT=(t,yy)=>{x.textAlign=AXL?'right':'left';x.fillText(t,AXL?padL-6:W-padR+6,yy)};const pn=S.ind==='none'?[]:S.ind==='both'?(Hh>=420?['rsi','macd']:['rsi']):[S.ind],nP=pn.length,subH=nP>1?Math.round(Hh*.13):Math.round(Hh*(Hh>=420?.2:.16));
   const ph=Hh-top-18-nP*(subH+gap),p0=top+ph+gap,p1=p0+subH+gap,hasR=pn.includes('rsi'),hasM=pn.includes('macd'),rTop=pn[0]==='rsi'?p0:p1,mTop=pn[0]==='macd'?p0:p1;const pw=W-padL-padR,bw=pw/slots;
   const X=i=>padL+(i-vx0+.5)*bw;
   let lo=1e18,hi=-1;for(let i=s;i<eN;i++){lo=Math.min(lo,bars[i].l);hi=Math.max(hi,bars[i].h)}
@@ -748,26 +872,26 @@ function drawChart(){
   if(lo>hi){lo=A.last*.95;hi=A.last*1.05}
   const pad=(hi-lo)*.05;lo-=pad;hi+=pad;if(V.y0!=null){lo=V.y0;hi=V.y1}
   const Y=p=>top+(hi-p)/(hi-lo)*ph;
-  x.font='11px '+ff;x.textBaseline='middle';
+  x.font=fz('',11);x.textBaseline='middle';
   const ticks=niceTicks(lo,hi,6);x.strokeStyle=C.sep;x.lineWidth=1;x.fillStyle=C.fg2;x.textAlign='left';
-  ticks.forEach(v=>{const yy=Math.round(Y(v))+.5;x.beginPath();x.moveTo(padL,yy);x.lineTo(W-padR,yy);x.stroke();x.fillText(fp(v),W-padR+6,yy)});
+  ticks.forEach(v=>{const yy=Math.round(Y(v))+.5;x.beginPath();x.moveTo(padL,yy);x.lineTo(W-padR,yy);x.stroke();axT(fp(v),yy)});
   const bottomY=top+ph+nP*(subH+gap);
   // events
-  if(S.ov.ev){const fd=Fn?F.rows.map(r=>r.d):[];x.save();x.font='10px '+ff;
+  if(S.ov.ev){const fd=Fn?F.rows.map(r=>r.d):[];x.save();x.font=fz('',10);
     const idxOf=d=>{if(d<=bars[N-1].t){if(d<bars[s].t)return null;let i=A.di[d];if(i==null)i=bars.findIndex(b=>b.t>=d);return i<0?null:i}if(!Fn)return null;const j=fd.findIndex(q=>q>=d);return j<0?null:N+j};
     const vline=(i,col,al,dash)=>{const xx=Math.round(X(i))+.5;x.strokeStyle=col;x.globalAlpha=al;x.setLineDash(dash);x.lineWidth=1;x.beginPath();x.moveTo(xx,top);x.lineTo(xx,top+ph);x.stroke();x.globalAlpha=1;x.setLineDash([]);return xx};
-    const vtext=(xx,lines,col,fromTop)=>{x.fillStyle=col;x.textAlign='left';lines.forEach((ln,k)=>{const w=x.measureText(ln).width;x.save();x.translate(xx+3+k*11,fromTop?top+w+6:top+ph-6);x.rotate(-Math.PI/2);x.fillText(ln,0,0);x.restore()})};
+    const vtext=(xx,lines,col,fromTop)=>{if(NARROW)return;x.fillStyle=col;x.textAlign='left';lines.forEach((ln,k)=>{const w=x.measureText(ln).width;x.save();x.translate(xx+3+k*11,fromTop?top+w+6:top+ph-6);x.rotate(-Math.PI/2);x.fillText(ln,0,0);x.restore()})};
     MSCI.forEach(([a,e,n])=>{const i=idxOf(e);if(i!=null)vtext(vline(i,'#f472b6',.6,[2,4]),[n,'(effective)'],'#f472b6',true);const ia=idxOf(a);if(ia!=null)vline(ia,'#f472b6',.3,[2,4])});
     BI.forEach(([d,n])=>{const i=idxOf(d);if(i!=null)vtext(vline(i,'#60a5fa',.5,[6,3,2,3]),[n],'#60a5fa',false)});
     events().filter(e=>e.k==='div'||e.k==='cus').forEach(e=>{const i=idxOf(e.d);if(i==null)return;const col=e.k==='div'?C.up:C.warn;vtext(vline(i,col,.55,[2,4]),[e.k==='div'?'Ex-div':e.t.slice(0,18)],col,true)});
     x.restore()}
   if(Fn){const xd=Math.round(X(N-.5))+.5;x.save();x.setLineDash([2,3]);x.strokeStyle=C.fg3;x.beginPath();x.moveTo(xd,top);x.lineTo(xd,bottomY);x.stroke();x.restore();
-    x.fillStyle=C.fg2;x.textAlign='right';x.fillText('HISTORICAL',xd-6,top+8);x.textAlign='left';x.fillText(`PROJECTION ${E.H} trading days${BL()?' · conviction '+BL().label+' '+BL().conviction:''}`,xd+6,top+8)}
+    x.fillStyle=C.fg2;x.textAlign='right';x.fillText(NARROW?'HIST':'HISTORICAL',xd-6,top+8);x.textAlign='left';x.fillText(NARROW?`+${E.H}d`:`PROJECTION ${E.H} trading days${BL()?' · conviction '+BL().label+' '+BL().conviction:''}`,xd+6,top+8)}
   x.save();x.beginPath();x.rect(padL,top,pw,ph);x.clip();
   if(S.ov.zones)A.zones.forEach(z=>{const x1=Math.max(s,z.s),x2=Math.min(N-1,z.e);if(x2<s||z.price<lo||z.price>hi)return;x.save();x.strokeStyle=z.role==='S'?'#34d399':'#f87171';x.lineWidth=2.5;x.beginPath();x.moveTo(X(x1),Y(z.price));x.lineTo(X(x2),Y(z.price));x.stroke();x.restore()});
   const FIBC={1:'#ef4444',0.786:'#f59e0b',0.618:'#10b981',0.5:'#3b82f6',0.382:'#8b5cf6',0.236:'#ec4899',0:'#6b7280'};
   const FIBN={1:'1.000 (Trend High)',0.786:'0.786',0.618:'0.618 (Golden Ratio)',0.5:'0.500',0.382:'0.382',0.236:'0.236',0:'0.000 (Trend Low)'};
-  const drawFib=(f,tag)=>{x.save();x.setLineDash([2,4]);x.lineWidth=1;x.textAlign='right';f.levels.forEach(l=>{if(l.p<lo||l.p>hi)return;const col=tag?C.vio:FIBC[l.r],yy=Math.round(Y(l.p))+.5;x.strokeStyle=col;x.fillStyle=col;x.globalAlpha=.65;x.beginPath();x.moveTo(padL,yy);x.lineTo(padL+pw,yy);x.stroke();x.globalAlpha=1;x.fillText(`${tag||'Fibo'} ${FIBN[l.r]}: ${fp(l.p)}`,padL+pw-4,yy+9)});x.restore()};
+  const drawFib=(f,tag)=>{x.save();x.setLineDash([2,4]);x.lineWidth=1;x.textAlign='right';f.levels.forEach(l=>{if(l.p<lo||l.p>hi)return;const col=tag?C.vio:FIBC[l.r],yy=Math.round(Y(l.p))+.5;x.strokeStyle=col;x.fillStyle=col;x.globalAlpha=.65;x.beginPath();x.moveTo(padL,yy);x.lineTo(padL+pw,yy);x.stroke();x.globalAlpha=1;x.fillText(NARROW?`${tag?'M ':''}${l.r}: ${fp(l.p)}`:`${tag||'Fibo'} ${FIBN[l.r]}: ${fp(l.p)}`,padL+pw-4,yy+9)});x.restore()};
   if(S.ov.fibM)drawFib(A.fibM,'Macro');if(S.ov.fibS)drawFib(A.fibS,'');
   if(S.ov.trend)[['res',C.down],['sup',C.up]].forEach(([k,col])=>{const t=A.tl[k];if(!t)return;const i2=N-1+Fn;x.save();x.strokeStyle=col;x.lineWidth=1.4;x.globalAlpha=.85;x.beginPath();x.moveTo(X(Math.max(s,t.i1)),Y(t.p1+t.m*(Math.max(s,t.i1)-t.i1)));x.lineTo(X(i2),Y(t.p1+t.m*(i2-t.i1)));x.stroke();x.restore()});
   if(S.ov.cyc&&A.cyc.res){const a=Math.max(s,A.cyc.a),i2=N-1+Math.min(Fn,20);[[A.cyc.res,C.down],[A.cyc.sup,C.up]].forEach(([f,col])=>{x.save();x.strokeStyle=col;x.lineWidth=1.8;x.beginPath();x.moveTo(X(a),Y(f.at(a)));x.lineTo(X(i2),Y(f.at(i2)));x.stroke();x.restore()})}
@@ -783,16 +907,16 @@ function drawChart(){
       x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1;x.globalAlpha=.9;x.beginPath();x.moveTo(xr,Y(q.h));x.lineTo(xr,Y(q.l));x.stroke();x.globalAlpha=.55;x.fillRect(xc-cw2/2,y1,cw2,Math.max(1,y2-y1));x.globalAlpha=.9;x.strokeRect(xc-cw2/2+.5,y1+.5,cw2-1,Math.max(1,y2-y1)-1);x.globalAlpha=1})}
     if(pat){x.setLineDash([8,5]);for(const[st,lw]of[['rgba(0,0,0,.6)',5],[C.fg,2.4]]){x.strokeStyle=st;x.lineWidth=lw;x.beginPath();x.moveTo(x0,y0);fl.line.forEach((v,i)=>x.lineTo(X(N+i),Y(v)));x.stroke()}x.setLineDash([])}
     const rank=e=>e.kind==='cross'?(/^Cycle/.test(e.name)?0:/^Pattern/.test(e.name)?1:2):3;
-    const drawEv=src=>{const evs=src.events.slice().sort((a,b)=>rank(a)-rank(b)||a.day-b.day).slice(0,6).sort((a,b)=>a.day-b.day);
-      x.font='600 10px '+ff;evs.forEach((e,k)=>{const px=X(N+e.day-1),py=Y(e.price),col=e.dir>0?C.up:C.down;x.fillStyle=C.win;x.strokeStyle=col;x.lineWidth=2;x.beginPath();x.arc(px,py,4.5,0,6.2832);x.fill();x.stroke();
-        const lab=evLabel(e)+' · '+fdate(fd[e.day-1]),yy=py+(e.dir>0?-16-(k%3)*13:20+(k%3)*13);x.textAlign=px>W-padR-150?'right':'left';x.fillStyle='rgba(0,0,0,.55)';const tw=x.measureText(lab).width;x.fillRect(x.textAlign==='right'?px-tw-5:px-1,yy-8,tw+6,14);x.fillStyle=col;x.fillText(lab,x.textAlign==='right'?px-3:px+2,yy)})};
+    const drawEv=src=>{const evs=src.events.slice().sort((a,b)=>rank(a)-rank(b)||a.day-b.day).slice(0,NARROW?1:6).sort((a,b)=>a.day-b.day);
+      x.font=fz('600 ',10);evs.forEach((e,k)=>{const px=X(N+e.day-1),py=Y(e.price),col=e.dir>0?C.up:C.down;x.fillStyle=C.win;x.strokeStyle=col;x.lineWidth=2;x.beginPath();x.arc(px,py,4.5,0,6.2832);x.fill();x.stroke();
+        const lab=evLabel(e)+' · '+fdate(fd[e.day-1]),yy=py+(e.dir>0?-16-(k%3)*13:20+(k%3)*13);x.textAlign=px>W-padR-150?'right':'left';x.fillStyle='rgba(0,0,0,.55)';const tw=x.measureText(lab).width;x.fillRect(x.textAlign==='right'?px-tw-5:px-1,yy-8*FS,tw+6,14*FS);x.fillStyle=col;x.fillText(lab,x.textAlign==='right'?px-3:px+2,yy)})};
     if(mlo){x.save();x.setLineDash([2,3]);x.strokeStyle=C.fg;x.globalAlpha=.45;x.lineWidth=1.2;x.beginPath();x.moveTo(x0,y0);fl.ml.line.forEach((v,i)=>x.lineTo(X(N+i),Y(v)));x.stroke();x.restore();drawEv(fl.ml)}
     if(pat)drawEv(fl);
     const pr=blendOn()?BL().probs:{bull:E.scen[0].p,side:E.scen[1].p,bear:E.scen[2].p},ex=X(N+E.H-1);x.textAlign='right';
-    if(pat){const ey=Y(fl.line[E.H-1]);x.font='700 11px '+ff;x.fillStyle=C.fg;x.fillText(`Forecast line ${fp(fl.line[E.H-1])} (${fpc(fl.ret*100)})`,ex-4,ey-18);
-      x.font='600 10px '+ff;x.fillStyle=C.fg2;x.fillText(`Bull ${nf0.format(pr.bull*100)}% · Neutral ${nf0.format(pr.side*100)}% · Bear ${nf0.format(pr.bear*100)}%`,ex-4,ey-6)}
-    if(mlo){const q=fl.ml.candles[E.H-1],ey=Y(Math.min(q.l,fl.ml.line[E.H-1]));x.font='700 11px '+ff;x.fillStyle=C.fg;x.fillText(`ML forecast ${fp(fl.ml.line[E.H-1])} (${fpc(fl.ml.ret*100)})`,ex-4,ey+16);
-      if(!pat){x.font='600 10px '+ff;x.fillStyle=C.fg2;x.fillText(`Bull ${nf0.format(pr.bull*100)}% · Neutral ${nf0.format(pr.side*100)}% · Bear ${nf0.format(pr.bear*100)}%`,ex-4,ey+28)}}
+    if(pat){const ey=Y(fl.line[E.H-1]);x.font=fz('700 ',11);x.fillStyle=C.fg;x.fillText(`Forecast line ${fp(fl.line[E.H-1])} (${fpc(fl.ret*100)})`,ex-4,ey-18);
+      x.font=fz('600 ',10);x.fillStyle=C.fg2;if(!NARROW)x.fillText(`Bull ${nf0.format(pr.bull*100)}% · Neutral ${nf0.format(pr.side*100)}% · Bear ${nf0.format(pr.bear*100)}%`,ex-4,ey-6)}
+    if(mlo){const q=fl.ml.candles[E.H-1],ey=Y(Math.min(q.l,fl.ml.line[E.H-1]));x.font=fz('700 ',11);x.fillStyle=C.fg;x.fillText(`ML forecast ${fp(fl.ml.line[E.H-1])} (${fpc(fl.ml.ret*100)})`,ex-4,ey+16);
+      if(!pat){x.font=fz('600 ',10);x.fillStyle=C.fg2;if(!NARROW)x.fillText(`Bull ${nf0.format(pr.bull*100)}% · Neutral ${nf0.format(pr.side*100)}% · Bear ${nf0.format(pr.bear*100)}%`,ex-4,ey+28)}}
     x.restore()}}
   if(Fn&&(S.ov.fc||S.ov.scn))[[F.T,C.up],[F.St,C.down]].forEach(([v,col])=>{if(!v||v<lo||v>hi||!S.ov.fc)return;x.save();x.setLineDash([1,3]);x.strokeStyle=col;x.lineWidth=1.2;x.beginPath();x.moveTo(X(N-1),Y(v));x.lineTo(padL+pw,Y(v));x.stroke();x.restore()});
   const cw=Math.max(1,bw*.64);for(let i=s;i<eN;i++){const b=bars[i],col=b.c>=b.o?C.up:C.down,xc=X(i);x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1;
@@ -805,19 +929,19 @@ function drawChart(){
       x.beginPath();x.moveTo(X(e),Y(pr.fu.at(0)));x.lineTo(X(n2),Y(pr.fu.at(n2-e)));x.lineTo(X(n2),Y(pr.fl.at(n2-e)));x.lineTo(X(e),Y(pr.fl.at(0)));x.closePath();x.fillStyle='rgba(251,191,36,.1)';x.fill();
       x.strokeStyle='#fbbf24';x.lineWidth=2;x.setLineDash([6,4]);[pr.fu,pr.fl].forEach(f=>{x.beginPath();x.moveTo(X(e),Y(f.at(0)));x.lineTo(X(n2),Y(f.at(n2-e)));x.stroke()});x.setLineDash([]);
       const mid=Math.round((e+n2)/2),ymax=Math.max(pr.fu.at(0),pr.fu.at(n2-e),pr.fl.at(0),pr.fl.at(n2-e)),my=Y(ymax);
-      x.font='700 13px '+ff;const tw=x.measureText(pr.full).width;let bx=X(mid);bx=Math.min(Math.max(bx,padL+tw/2+8),padL+pw-tw/2-8);const ty=Math.max(top+16,my-40);
-      x.fillStyle='rgba(0,0,0,.6)';x.fillRect(bx-tw/2-6,ty-11,tw+12,22);x.fillStyle=fc;x.textAlign='center';x.fillText(pr.full,bx,ty);
+      x.font=fz('700 ',13);const tw=x.measureText(pr.full).width;let bx=X(mid);bx=Math.min(Math.max(bx,padL+tw/2+8),padL+pw-tw/2-8);const ty=Math.max(top+16,my-40);
+      x.fillStyle='rgba(0,0,0,.6)';x.fillRect(bx-tw/2-6,ty-11*FS,tw+12,22*FS);x.fillStyle=fc;x.textAlign='center';x.fillText(pr.full,bx,ty);
       x.strokeStyle='#e5e7eb';x.lineWidth=1;x.beginPath();x.moveTo(X(mid),ty+11);x.lineTo(X(mid),my-3);x.stroke();x.fillStyle='#e5e7eb';x.beginPath();x.moveTo(X(mid),my-2);x.lineTo(X(mid)-3,my-9);x.lineTo(X(mid)+3,my-9);x.closePath();x.fill();x.restore()}
     A.sec.forEach(sp=>{const col=sp.bias==='bear'?'#f87171':'#4ade80',ny=Y(sp.neck);x.save();x.strokeStyle=col;x.fillStyle=col;x.lineWidth=1.5;x.setLineDash([2,3]);x.beginPath();
       sp.idx.forEach((i,k)=>{k?x.lineTo(X(i),Y(sp.prices[k])):x.moveTo(X(i),Y(sp.prices[k]))});x.stroke();x.setLineDash([]);x.lineWidth=2.4;
       sp.idx.forEach((i,k)=>{const px=X(i),py=Y(sp.prices[k]);x.beginPath();x.moveTo(px-5,py-5);x.lineTo(px+5,py+5);x.moveTo(px+5,py-5);x.lineTo(px-5,py+5);x.stroke()});
       x.setLineDash([8,3,2,3]);x.globalAlpha=.6;x.lineWidth=1.2;x.beginPath();x.moveTo(padL,ny);x.lineTo(padL+pw,ny);x.stroke();x.globalAlpha=1;x.setLineDash([]);
-      x.textAlign='left';x.font='11px '+ff;x.fillText(`${sp.name} Neckline: ${fp(sp.neck)}`,padL+4,ny+(sp.bias==='bull'?11:-9));x.restore()})}
+      x.textAlign='left';x.font=fz('',11);x.fillText(NARROW?`Neckline ${fp(sp.neck)}`:`${sp.name} Neckline: ${fp(sp.neck)}`,padL+4,ny+(sp.bias==='bull'?11:-9));x.restore()})}
   const t=label(S.ticker),pos=POS.find(p=>p.t===t),bv=S.par.bep>0?S.par.bep:pos?bep(pos.entry,pos.lot):0;
   if(bv&&bv>lo&&bv<hi){x.save();x.setLineDash([8,4]);x.strokeStyle=C.gold;x.lineWidth=1.2;x.beginPath();x.moveTo(padL,Y(bv));x.lineTo(padL+pw,Y(bv));x.stroke();x.fillStyle=C.gold;x.textAlign='right';x.fillText(`BEP ${nf0.format(bv)}`,padL+pw-4,Y(bv)-8);x.restore()}
   x.restore();
-  const ly=Y(A.last),up=A.last>=A.prev;x.fillStyle=up?C.up:C.down;x.beginPath();x.roundRect?x.roundRect(W-padR+2,ly-9,padR-4,18,4):x.rect(W-padR+2,ly-9,padR-4,18);x.fill();x.fillStyle='#fff';x.textAlign='left';x.font='600 11px '+ff;x.fillText(fp(A.last),W-padR+7,ly);x.font='11px '+ff;
-  if(hasR){const RY=v=>rTop+(100-v)/100*subH;x.fillStyle=C.fill;x.fillRect(padL,RY(70),pw,RY(30)-RY(70));x.strokeStyle=C.sep;[30,50,70].forEach(v=>{x.beginPath();x.moveTo(padL,Math.round(RY(v))+.5);x.lineTo(padL+pw,Math.round(RY(v))+.5);x.stroke();x.fillStyle=C.fg2;x.fillText(v,W-padR+6,RY(v))});
+  const ly=Y(A.last),up=A.last>=A.prev;x.fillStyle=up?C.up:C.down;x.beginPath();const tgX=AXL?2:W-padR+2,tgW=AXL?padL-4:padR-4;x.roundRect?x.roundRect(tgX,ly-9*FS,tgW,18*FS,4):x.rect(tgX,ly-9*FS,tgW,18*FS);x.fill();x.fillStyle='#fff';x.textAlign='left';x.font=fz('600 ',11);x.fillText(fp(A.last),tgX+5,ly);x.font=fz('',11);
+  if(hasR){const RY=v=>rTop+(100-v)/100*subH;x.fillStyle=C.fill;x.fillRect(padL,RY(70),pw,RY(30)-RY(70));x.strokeStyle=C.sep;[30,50,70].forEach(v=>{x.beginPath();x.moveTo(padL,Math.round(RY(v))+.5);x.lineTo(padL+pw,Math.round(RY(v))+.5);x.stroke();x.fillStyle=C.fg2;axT(v,RY(v))});
   x.strokeStyle=C.vio;x.lineWidth=1.3;x.beginPath();for(let i=s;i<eN;i++){const v=A.r[i];if(v==null)continue;i===s?x.moveTo(X(i),RY(v)):x.lineTo(X(i),RY(v))}x.stroke();x.fillStyle=C.fg2;x.textAlign='left';x.fillText('RSI 14  '+nf1.format(A.r[N-1]),padL+4,rTop-8);
   }
   if(hasM){let mm=0;for(let i=s;i<eN;i++)mm=Math.max(mm,Math.abs(A.m.line[i]),Math.abs(A.m.sig[i]),Math.abs(A.m.hist[i]));const MY=v=>mTop+subH/2-v/mm*subH/2;
@@ -1076,16 +1200,16 @@ function panelPlan(){const t=label(S.ticker),pos=POS.find(p=>p.t===t),lot=pos?po
 
 function renderPanel(){const P={struktur:panelStruktur,pola:panelPola,engine:panelEngine,forecast:panelForecast,fib:panelFib,event:panelEvent,plan:panelPlan,deep:panelDeep}[S.tab]||panelStruktur;$('#panel').innerHTML=P();if(S.tab==='forecast')drawHist()}
 function withFocus(fn){const a=document.activeElement,id=a&&a.id,ss=a&&a.selectionStart;fn();if(id){const n=document.getElementById(id);if(n&&n!==document.activeElement){n.focus();try{if(ss!=null&&n.setSelectionRange)n.setSelectionRange(ss,ss)}catch(e){}}}}
-function renderAll(){recompute();readColors();renderSide();renderChips();renderHeader();renderInspector();renderPanel();drawChart();maybeDeep()}
-function refresh(){withFocus(()=>{recompute();renderHeader();renderInspector();renderPanel();drawChart()});maybeDeep()}
+function renderAll(){recompute();readColors();renderSide();renderChips();renderHeader();renderInspector();renderPanel();drawChart();renderMobile();maybeDeep()}
+function refresh(){withFocus(()=>{recompute();renderHeader();renderInspector();renderPanel();drawChart();renderMobile()});maybeDeep()}
 
 /* ---------- events ---------- */
 document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
-  if(t.dataset.k){S.ticker=t.dataset.k;hover=null;S._scrolled=true;save();renderAll();return}
+  if(t.dataset.k){S.ticker=t.dataset.k;hover=null;S._scrolled=true;save();if(MOB.matches)setDrawer(false);renderAll();return}
   if(t.dataset.mb){modebar(t.dataset.mb);return}
   if(t.dataset.ind){S.ind=t.dataset.ind;save();renderInd();drawChart();return}
   if(t.dataset.tf){S.tf=t.dataset.tf;save();renderChips();refresh();return}
-  if(t.dataset.tab){S.tab=t.dataset.tab;save();renderChips();renderPanel();maybeDeep(true);return}
+  if(t.dataset.tab){S.tab=t.dataset.tab;save();renderChips();renderPanel();renderMobile();maybeDeep(true);return}
   if(t.dataset.etab){S.etab=t.dataset.etab;save();renderPanel();return}
   if(t.id==='sideToggle'){S.collapsed=!S.collapsed;save();applyCollapse();drawChart();return}
   if(t.id==='resetPar'){Object.assign(S.par,PAR_DEF);Object.assign(S.ov,OV_DEF);delete S.swing[S.ticker];save();renderAll();return}
@@ -1166,6 +1290,44 @@ function doImport(){const tk=$('#impTk').value.toUpperCase().trim().replace(/^\^
   catch(err){m.innerHTML=`<div class="err">${esc(err.message)}</div>`}}
 
 document.addEventListener('toggle',e=>{const d=e.target;if(d.dataset&&d.dataset.sec){S.sec[d.dataset.sec]=d.open;save()}},true);
+
+/* ---------- phone layout (<=760px): header, ticker card, stat tiles, engine card, section grid, bottom bar ---------- */
+const MOB=matchMedia('(max-width:760px)');
+const MTAB={struktur:'Market Structure',pola:'Pattern Analysis',engine:'Forecast Engine',forecast:'Forecast GBM',fib:'Fibonacci & S/R',deep:'Deep Forecast',event:'Event Calendar',plan:'Plan & Portfolio'};
+const mSmooth=()=>matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth';
+function setDrawer(open){const g=$('#appGrid');g.classList.toggle('m-open',open);$('#mScrim').hidden=!open;document.body.classList.toggle('m-lock',open);$('#mMenu').setAttribute('aria-expanded',open)}
+function mActive(k){const bar=$('#mTabbar');bar.querySelectorAll('button').forEach(b=>{const on=(b.dataset.mgo||b.dataset.mtab)===k;b.setAttribute('aria-current',on?'page':'false');if(on&&MOB.matches&&(b.offsetLeft<bar.scrollLeft||b.offsetLeft+b.offsetWidth>bar.scrollLeft+bar.clientWidth+1))bar.scrollTo({left:b.offsetLeft-(bar.clientWidth-b.offsetWidth)/2,behavior:mSmooth()})})}
+function mArrows(){const bar=$('#mTabbar'),max=bar.scrollWidth-bar.clientWidth;$('#mPrev').disabled=bar.scrollLeft<=2;$('#mNext').disabled=bar.scrollLeft>=max-2}
+function renderMobile(){if(!A||!E)return;const N=A.N,t=label(S.ticker),ch=(A.last/A.prev-1)*100,d=DATA[S.ticker]||{};
+  $('#mTk').textContent=t==='JKSE'?'^JKSE':t;$('#mAv').textContent=t==='JKSE'?'IX':t.slice(0,2);$('#mName').textContent=$('#tName').textContent||'';
+  $('#mPx').textContent='Rp '+fp(A.last);const c=$('#mChg');c.textContent=`${ch>=0?'▲':'▼'} ${fpc(ch,2)}`;c.className='m-chg '+cls(ch);
+  const sp=$('#mSrc');sp.textContent=d.sample?'Sample data':d.live?'Live':'Imported';sp.className='pill m-src '+(d.sample?'warn':'info');
+  {const b=A.bars[N-1],cell=(k,v)=>`<span><i>${k}</i><b>${v}</b></span>`;$('#mOhlc').innerHTML=cell('Open',fp(b.o))+cell('High',fp(b.h))+cell('Low',fp(b.l))+cell('Volume',b.v?new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:1}).format(b.v):'–')}
+  const r=A.r[N-1];$('#mRsi').textContent=r==null?'–':nf1.format(r);$('#mRsi').className=r>=70?'down':r<=30?'up':'';$('#mRsiS').textContent=r==null?'':r>=70?'Overbought':r<=30?'Oversold':'Neutral zone';
+  const mb=A.m.line[N-1]>=A.m.sig[N-1];$('#mMacd').textContent=mb?'Bullish':'Bearish';$('#mMacd').className=mb?'up':'down';$('#mMacdS').textContent=mb?'Line above signal':'Line below signal';
+  const e20=A.e20[N-1],e50=A.e50[N-1],tu=A.last>e20&&e20>e50,td=A.last<e20&&e20<e50;$('#mTrend').textContent=tu?'Uptrend':td?'Downtrend':'Sideways';$('#mTrend').className=tu?'up':td?'down':'warn';$('#mTrendS').textContent='vs EMA20/50';
+  const[vc,vt]=verdictE(),sc=E.scen,v=$('#mVerdict');v.textContent=vt;v.className='pill '+vc;
+  const rows=F&&F.rows&&F.rows.length?F.rows:null,q=rows?rows[Math.min(E.H,rows.length)-1]:null;
+  $('#mRange').textContent=q?`Rp ${fp(q.l1)} – ${fp(q.h1)}`:'–';
+  $('#mEsub').textContent=`68% probability range in ${E.H} trading days`;
+  $('#mPlab').innerHTML=`<span class="up">Bull ${nf0.format(sc[0].p*100)}%</span><span>Neutral ${nf0.format(sc[1].p*100)}%</span><span class="down">Bear ${nf0.format(sc[2].p*100)}%</span>`;
+  {const kv=(k,v,c)=>`<span><i>${k}</i><b class="${c||''}">${v}</b></span>`;$('#mKv').innerHTML=q?kv('Expected',fp(q.exp),'')+kv('Change',fpc((q.exp/A.last-1)*100),cls(q.exp-A.last))+kv('95% range',`${fp(q.l2)}–${fp(q.h2)}`,''):''}
+  const pb=$('#mPbar');pb.innerHTML=`<i class="b" style="width:${sc[0].p*100}%"></i><i class="n" style="width:${sc[1].p*100}%"></i><i class="s" style="width:${sc[2].p*100}%"></i>`;
+  pb.setAttribute('aria-label',`Bull ${nf0.format(sc[0].p*100)}%, neutral ${nf0.format(sc[1].p*100)}%, bear ${nf0.format(sc[2].p*100)}%`);
+  $('#mPtitle').textContent=MTAB[S.tab]||''}
+function mOpenTab(k){const b=document.querySelector(`#tabSeg [data-tab="${k}"]`);if(b)b.click();mActive(k);requestAnimationFrame(()=>{const el=$('#mPtitle');if(el)el.scrollIntoView({behavior:mSmooth(),block:'start'})})}
+document.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;
+  if(t.id==='mMenu'||t.id==='mTick'){setDrawer(!$('#appGrid').classList.contains('m-open'));return}
+  if(t.id==='mPrev'||t.id==='mNext'){const bar=$('#mTabbar');bar.scrollBy({left:(t.id==='mNext'?1:-1)*bar.clientWidth,behavior:mSmooth()});return}
+  if(t.dataset.mtab){mOpenTab(t.dataset.mtab);return}
+  if(t.dataset.mstat){const k=t.dataset.mstat;if(k==='trend'){mOpenTab('struktur');return}S.ind=S.ind===k?'none':k;save();renderInd();drawChart();$('#chartWrap').scrollIntoView({behavior:mSmooth(),block:'center'});return}
+  if(t.dataset.mgo){mActive('overview');scrollTo({top:0,behavior:mSmooth()})}});
+$('#mScrim').addEventListener('click',()=>setDrawer(false));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#appGrid').classList.contains('m-open'))setDrawer(false)});
+addEventListener('scroll',()=>{if(!MOB.matches)return;const pt=$('#mPtitle').getBoundingClientRect().top;mActive(pt<innerHeight*.5?S.tab:'overview')},{passive:true});
+try{MOB.addEventListener('change',()=>{setDrawer(false);drawChart()})}catch(e){}
+$('#mTabbar').addEventListener('scroll',mArrows,{passive:true});addEventListener('resize',mArrows);
+mActive('overview');mArrows();
 function applyCollapse(){$('#appGrid').classList.toggle('collapsed',!!S.collapsed);$('#sideToggle').setAttribute('aria-expanded',!S.collapsed)}
 /* ---------- live data from the local server (server.py -> yfinance) ---------- */
 const API_OK=location.protocol.startsWith('http');
@@ -1183,7 +1345,7 @@ async function apiFetch(url,opt){if(!STATIC_DIR)return fetch(url,opt);
     if(p.endsWith('/api/status')){const j=await _sget('status.json');return reply({...j,running:false})}
     return reply({ok:true})}
   catch(e){return reply({error:'online data not available: '+e.message},502)}}
-const setStatus=(t,bad)=>{const n=$('#dataStatus');if(n){n.textContent=t;n.style.color=bad?'var(--down)':''}};
+const setStatus=(t,bad)=>{const n=$('#dataStatus');if(n){n.textContent=t;n.style.color=bad?'var(--down)':''}const m=$('#mStatusTxt');if(m){m.textContent=t.replace(/^Data: /,'').replace(/ · no data: (.*)$/,(_,s)=>` · ${s.split(', ').length} without data`);$('#mDot').className='pd '+(bad?'err':'ok')}};
 async function fetchBars(codes,refresh){const r=await apiFetch('/api/bars?years=3&t='+encodeURIComponent(codes.join(','))+(refresh?'&refresh=1':''));const j=await r.json();if(!r.ok)throw new Error(j.error||r.status);return j}
 async function loadLive(force,silent){if(!API_OK){setStatus('Data: sample (open this page through server.py, not as a file)',true);return}
   if(!silent)setStatus('Downloading prices from Yahoo Finance…');
