@@ -303,12 +303,11 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-iconbtn svg{width:var(--g4);height:var(--g4)}
 
   /* ticker card */
-  .m-tick{display:grid;grid-template-columns:var(--g6) minmax(0,1fr) auto;align-items:center;column-gap:var(--g3);row-gap:var(--g3);position:relative;margin:0 var(--g3) var(--g3);width:calc(100% - 2*var(--g3));padding:var(--g4);border-radius:var(--g4);border:.5px solid var(--sep);background:linear-gradient(135deg,var(--accent-soft),transparent 62%),var(--pane);text-align:left;cursor:pointer;color:inherit;font:inherit}
+  .m-tick{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:var(--g3);row-gap:var(--g3);position:relative;margin:0 var(--g3) var(--g3);width:calc(100% - 2*var(--g3));padding:var(--g4);border-radius:var(--g4);border:.5px solid var(--sep);background:var(--pane);text-align:left;cursor:pointer;color:inherit;font:inherit}
   .m-ohlc{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--g2);padding-top:var(--g3);border-top:.5px solid var(--sep)}
   .m-ohlc span{display:flex;flex-direction:column;gap:2px;min-width:0}
   .m-ohlc i{font-style:normal;font-size:var(--fs1);color:var(--fg3)}
   .m-ohlc b{font:600 var(--fs2) var(--display);font-variant-numeric:tabular-nums}
-  .m-av{width:var(--g6);height:var(--g6);border-radius:var(--g3);display:grid;place-items:center;background:var(--accent);color:#fff;font:700 var(--fs3) var(--display);flex:none}
   .m-tkb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
   .m-tkb b{font:700 var(--fs4)/1.2 var(--display)}
   .m-name{font-size:var(--fs1);color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -319,7 +318,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-chg.up{background:var(--up-soft)} .m-chg.down{background:var(--down-soft)}
   .m-src{position:absolute;top:var(--g3);right:var(--g3)}
   .m-chev{color:var(--fg3);display:grid;place-items:center;flex:none}
-  .m-tick .m-chev{grid-row:1;grid-column:3}
+  .m-tick .m-chev{grid-row:1;grid-column:2}
 
   .titlebar{display:none}
 
@@ -365,7 +364,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-stat b.up{color:var(--up)}.m-stat b.down{color:var(--down)}.m-stat b.warn{color:var(--warn)}
 
   /* forecast engine */
-  .m-engine{display:flex;flex-direction:column;align-items:stretch;gap:var(--g1);padding:var(--g4);border-radius:var(--g4);background:linear-gradient(135deg,var(--accent-soft),transparent 62%),var(--pane)}
+  .m-engine{display:flex;flex-direction:column;align-items:stretch;gap:var(--g1);padding:var(--g4);border-radius:var(--g4);background:var(--pane)}
   .m-engine .m-ic{width:var(--g4);height:var(--g4);border-radius:var(--g1)}
   .m-plab{display:flex;justify-content:space-between;font-size:var(--fs1);color:var(--fg2);font-variant-numeric:tabular-nums}
   .m-plab .up{color:var(--up)}.m-plab .down{color:var(--down)}
@@ -404,7 +403,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 </style>
 
 <div class="window land" id="win">
-  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-av" id="mAv">–</span><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
   <header class="titlebar">
     <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <button class="icon-btn" id="sideToggle" aria-label="Show or hide the customisation menu" aria-controls="side" aria-expanded="true"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 1v12" stroke="currentColor" stroke-width="1.5"/></svg></button>
@@ -835,7 +834,7 @@ const OV_DEF={ema:true,fibS:true,fibM:false,zones:true,trend:false,cyc:false,pat
 const PAR_DEF={weeks:16,pivot:6,tol:1.5,minT:2,span:40,blend:40,tilt:50,band:0.5,wR:40,wT:35,wF:25,bep:0};
 const FC_DEF={drift:'hist',ann:8,volOv:0,evDate:'',evF:1.15,target:0,stop:0};
 const saved=store.get('ui4en',{});
-const S={ticker:saved.ticker||'BBCA',tf:saved.tf&&TF[saved.tf]?saved.tf:'6M',tab:saved.tab||'struktur',ov:Object.assign({},OV_DEF,saved.ov,{fc:false}),par:Object.assign({},PAR_DEF,saved.par),fc:Object.assign({},FC_DEF,saved.fc),swing:saved.swing||{},etab:saved.etab||'reg',ind:['rsi','macd','both','none'].includes(saved.ind)?saved.ind:'none',q:'',sec:saved.sec||{},collapsed:!!saved.collapsed};
+const S={ticker:saved.ticker||'BBCA',tf:saved.tf&&TF[saved.tf]?saved.tf:'3M',tab:saved.tab||'struktur',ov:Object.assign({},OV_DEF,saved.ov,{fc:false}),par:Object.assign({},PAR_DEF,saved.par),fc:Object.assign({},FC_DEF,saved.fc),swing:saved.swing||{},etab:saved.etab||'reg',ind:['rsi','macd','both','none'].includes(saved.ind)?saved.ind:'none',q:'',sec:saved.sec||{},collapsed:!!saved.collapsed};
 let POS=store.get('pos',[]);
 let DIV=store.get('div',{}),CEV=store.get('cev',[]);
 if(!DATA[S.ticker])S.ticker='BBCA';
@@ -1299,7 +1298,7 @@ function setDrawer(open){const g=$('#appGrid');g.classList.toggle('m-open',open)
 function mActive(k){const bar=$('#mTabbar');bar.querySelectorAll('button').forEach(b=>{const on=(b.dataset.mgo||b.dataset.mtab)===k;b.setAttribute('aria-current',on?'page':'false');if(on&&MOB.matches&&(b.offsetLeft<bar.scrollLeft||b.offsetLeft+b.offsetWidth>bar.scrollLeft+bar.clientWidth+1))bar.scrollTo({left:b.offsetLeft-(bar.clientWidth-b.offsetWidth)/2,behavior:mSmooth()})})}
 function mArrows(){const bar=$('#mTabbar'),max=bar.scrollWidth-bar.clientWidth;$('#mPrev').disabled=bar.scrollLeft<=2;$('#mNext').disabled=bar.scrollLeft>=max-2}
 function renderMobile(){if(!A||!E)return;const N=A.N,t=label(S.ticker),ch=(A.last/A.prev-1)*100,d=DATA[S.ticker]||{};
-  $('#mTk').textContent=t==='JKSE'?'^JKSE':t;$('#mAv').textContent=t==='JKSE'?'IX':t.slice(0,2);$('#mName').textContent=$('#tName').textContent||'';
+  $('#mTk').textContent=t==='JKSE'?'^JKSE':t;$('#mName').textContent=$('#tName').textContent||'';
   $('#mPx').textContent='Rp '+fp(A.last);const c=$('#mChg');c.textContent=`${ch>=0?'▲':'▼'} ${fpc(ch,2)}`;c.className='m-chg '+cls(ch);
   const sp=$('#mSrc');sp.textContent=d.sample?'Sample data':d.live?'Live':'Imported';sp.className='pill m-src '+(d.sample?'warn':'info');
   {const b=A.bars[N-1],cell=(k,v)=>`<span><i>${k}</i><b>${v}</b></span>`;$('#mOhlc').innerHTML=cell('Open',fp(b.o))+cell('High',fp(b.h))+cell('Low',fp(b.l))+cell('Volume',b.v?new Intl.NumberFormat('en-US',{notation:'compact',maximumFractionDigits:1}).format(b.v):'–')}
