@@ -14,6 +14,7 @@ idx_trend_studio/*.tmp
 
 # Screenshots / exports
 *.png
+!idx_trend_studio/static/*.png
 *.pdf
 
 # macOS / Windows / editors

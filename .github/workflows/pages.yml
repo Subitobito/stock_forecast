@@ -1,4 +1,4 @@
-# Publishes the IDX Trend Studio Web UI to GitHub Pages with fresh data.
+# Publishes the IDX Stock Forecast Web UI to GitHub Pages with fresh data.
 # GitHub Pages cannot run Python, so this job does what server.py would do (prices + Deep Forecast)
 # and publishes the answers as JSON files next to the page (see idx_trend_studio/build_static.py).
 #

@@ -589,7 +589,7 @@ def main():
         threading.Thread(target=UPDATER.loop, daemon=True, name="updater").start()
     srv = ThreadingHTTPServer((a.host, a.port), Handler)
     url = f"http://{a.host}:{a.port}/"
-    print(f"IDX Trend Studio running at {url}  (Ctrl+C to stop)")
+    print(f"IDX Stock Forecast running at {url}  (Ctrl+C to stop)")
     if chosen:
         start_streamlit(chosen[0], chosen[1], a.app_port)
         print(f"Streamlit stock forecast v{chosen[0]} ({chosen[1].name}) starting at {APP_INFO['url']}   (log: streamlit_app.log)")
