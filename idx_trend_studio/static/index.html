@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" id="vp" content="width=device-width,initial-scale=1,viewport-fit=cover"><script>/* Desktop mode on a phone (chosen with the button, kept in this browser): render the desktop layout 1280px wide, fitted to the screen. */(function(){try{if(localStorage.getItem("its.view")==='"desktop"'&&Math.min(screen.width,screen.height)<900){var s=Math.min(1,(window.innerWidth||screen.width)/1280).toFixed(3);document.getElementById("vp").setAttribute("content","width=1280,initial-scale="+s+",minimum-scale="+s+",maximum-scale=5,viewport-fit=cover");document.documentElement.classList.add("forced-desktop")}}catch(e){}})()</script></head><body>
-<title>IDX Trend Studio English</title>
+<title>IDX Stock Forecast</title><link rel="icon" type="image/png" href="logo.png"><link rel="apple-touch-icon" href="logo.png">
 <style>
 /* Layout: a single macOS window — translucent source-list sidebar, unified toolbar, chart canvas, segmented tabs below, inspector column on the right. */
 :root{
@@ -294,7 +294,8 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 
   /* header */
   .m-head{display:flex;align-items:center;gap:var(--g3);padding:calc(var(--g3) + env(safe-area-inset-top,0px)) max(var(--g3),env(safe-area-inset-right,0px)) var(--g3) max(var(--g3),env(safe-area-inset-left,0px))}
-  .m-logo{width:var(--g5);height:var(--g5);border-radius:var(--g2);display:grid;place-items:center;background:var(--accent-soft);color:var(--accent-ink);flex:none}
+  .m-logo{width:var(--g5);height:var(--g5);border-radius:50%;overflow:hidden;display:grid;place-items:center;flex:none}
+  .m-logo img{width:100%;height:100%;display:block}
   .m-logo svg{width:var(--g4);height:var(--g4)}
   .m-brand{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
   .m-brand b{font:700 var(--fs3)/1.2 var(--display);letter-spacing:-.01em}
@@ -303,20 +304,20 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-iconbtn svg{width:var(--g4);height:var(--g4)}
 
   /* ticker card */
-  .m-tick{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:var(--g3);row-gap:var(--g3);position:relative;margin:0 var(--g3) var(--g3);width:calc(100% - 2*var(--g3));padding:var(--g4);border-radius:var(--g4);border:.5px solid var(--sep);background:var(--pane);text-align:left;cursor:pointer;color:inherit;font:inherit}
+  .m-tick{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;column-gap:var(--g3);row-gap:var(--g3);position:relative;margin:0 var(--g3) var(--g3);width:calc(100% - 2*var(--g3));padding:var(--g2) 0;border:0;border-radius:0;background:transparent;text-align:left;cursor:pointer;color:inherit;font:inherit}
   .m-ohlc{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--g2);padding-top:var(--g3);border-top:.5px solid var(--sep)}
   .m-ohlc span{display:flex;flex-direction:column;gap:2px;min-width:0}
   .m-ohlc i{font-style:normal;font-size:var(--fs1);color:var(--fg3)}
   .m-ohlc b{font:600 var(--fs2) var(--display);font-variant-numeric:tabular-nums}
   .m-tkb{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-  .m-tkb b{font:700 var(--fs4)/1.2 var(--display)}
+  .m-tkb b{font:700 var(--fs3)/1.2 var(--display)}
   .m-name{font-size:var(--fs1);color:var(--fg2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .m-name:empty{display:none}
   .m-pxrow{display:flex;align-items:center;gap:var(--g2);flex-wrap:wrap;margin-top:var(--g1)}
-  .m-px{font:700 var(--fs5)/1.1 var(--display);font-variant-numeric:tabular-nums}
+  .m-px{font:700 var(--fs4)/1.15 var(--display);font-variant-numeric:tabular-nums}
   .m-chg{font-size:var(--fs1);font-weight:600;padding:3px var(--g2);border-radius:var(--g1);font-variant-numeric:tabular-nums}
   .m-chg.up{background:var(--up-soft)} .m-chg.down{background:var(--down-soft)}
-  .m-src{position:absolute;top:var(--g3);right:var(--g3)}
+  .m-src{position:absolute;top:var(--g2);right:0}
   .m-chev{color:var(--fg3);display:grid;place-items:center;flex:none}
   .m-note{display:flex;align-items:center;gap:var(--g2);margin:0 var(--g3) var(--g3);padding:var(--g2) var(--g3);border-radius:var(--g2);background:var(--info-soft);color:var(--accent-ink);font-size:var(--fs1)}
   .m-note svg{flex:none}
@@ -341,17 +342,18 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .main2{background:transparent;padding:0 var(--g3);overflow:visible;display:flex;flex-direction:column;gap:var(--g3)}
   .toprow{display:block;height:auto;border:0}
   .chartcol{background:transparent;border:0;border-radius:0;overflow:hidden;padding-bottom:var(--g1)}
-  .chart-head{padding:var(--g1) var(--g1) 0 0}
-  .cyc-title{font-size:var(--fs1);padding:var(--g3) var(--g3) 0}
-  .modebar{margin:var(--g1) 0 2px var(--g2)}
+  .chart-head{padding:var(--g1) 0 0}
+  .cyc-title{font-size:var(--fs1);padding:var(--g3) 0 0}
+  .modebar{margin:var(--g1) 0 2px 0}
   .toprow .chart-wrap{height:auto;aspect-ratio:var(--phi)/1;max-height:70vh;margin:var(--g1) 0 0}
   .toprow .chart-wrap.m-ind{aspect-ratio:1.272/1}   /* room for the RSI / MACD panel */
-  .indbar{padding:var(--g1) var(--g3);font-size:var(--fs1)}
-  .legend{flex-wrap:nowrap;overflow-x:auto;padding:var(--g1) var(--g3);scrollbar-width:none;font-size:var(--fs1)}
+  .indbar{padding:var(--g1) 0;font-size:var(--fs1)}
+  .legend{flex-wrap:nowrap;overflow-x:auto;padding:var(--g1) 0;scrollbar-width:none;font-size:var(--fs1)}
   .legend span{flex:none}
   .toprow .summary,.main2 .tabs,.footer{display:none}
 
-  .m-stat,.m-engine{border:.5px solid var(--sep);background:var(--pane);color:inherit;text-align:left;cursor:pointer;font:inherit}
+  .m-stat,.m-engine{border:0;background:transparent;color:inherit;text-align:left;cursor:pointer;font:inherit}
+  .m-stats,.m-engine,.m-status{border-top:.5px solid var(--sep);padding-top:var(--g3)}   /* hairline between sections instead of boxes */
   .m-ic{width:var(--g5);height:var(--g5);border-radius:var(--g2);display:grid;place-items:center;flex:none}
   .m-ic.acc{background:var(--accent-soft);color:var(--accent-ink)}
   .m-ic.up{background:var(--up-soft);color:var(--up)}
@@ -361,15 +363,15 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 
   /* indicator tiles */
   .m-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:var(--g2)}
-  .m-stat{min-width:0;padding:var(--g3);border-radius:var(--g3);display:flex;flex-direction:column;gap:var(--g1)}
+  .m-stat{min-width:0;padding:0;border-radius:var(--g1);display:flex;flex-direction:column;gap:var(--g1)}
   .m-sh{display:flex;align-items:center;gap:var(--g1);font-size:var(--fs1);color:var(--fg2);min-width:0}
   .m-ss{font-size:var(--fs1);color:var(--fg3);line-height:1.3}
   .m-stat .m-ic{width:var(--g4);height:var(--g4);border-radius:var(--g1)}
-  .m-stat b{font:700 clamp(15px,4.6vw,var(--fs3))/1.2 var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .m-stat b{font:700 16px/1.2 var(--display);white-space:nowrap;font-variant-numeric:tabular-nums}
   .m-stat b.up{color:var(--up)}.m-stat b.down{color:var(--down)}.m-stat b.warn{color:var(--warn)}
 
   /* forecast engine */
-  .m-engine{display:flex;flex-direction:column;align-items:stretch;gap:var(--g1);padding:var(--g4);border-radius:var(--g4);background:var(--pane)}
+  .m-engine{display:flex;flex-direction:column;align-items:stretch;gap:var(--g1);padding:var(--g3) 0 0;border-radius:0;background:transparent}
   .m-engine .m-ic{width:var(--g4);height:var(--g4);border-radius:var(--g1)}
   .m-plab{display:flex;justify-content:space-between;font-size:var(--fs1);color:var(--fg2);font-variant-numeric:tabular-nums}
   .m-plab .up{color:var(--up)}.m-plab .down{color:var(--down)}
@@ -380,17 +382,17 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
   .m-kv b{font:600 var(--fs2) var(--display);font-variant-numeric:tabular-nums;white-space:nowrap}
   .m-kv b.up{color:var(--up)}.m-kv b.down{color:var(--down)}
   .m-eh{display:flex;align-items:center;gap:var(--g2);font:600 var(--fs2) var(--display)}
-  .m-range{font:700 var(--fs4)/1.15 var(--display);font-variant-numeric:tabular-nums}
+  .m-range{font:700 var(--fs3)/1.2 var(--display);font-variant-numeric:tabular-nums}
   .m-esub{font-size:var(--fs1);color:var(--fg2)}
   .m-pbar{display:flex;height:var(--g1);border-radius:3px;overflow:hidden;margin:var(--g1) 0 2px;background:var(--fill2)}
   .m-pbar i{display:block;height:100%}.m-pbar .b{background:var(--up)}.m-pbar .n{background:var(--fg3)}.m-pbar .s{background:var(--down)}
   .m-disc{font-size:var(--fs1);color:var(--fg3)}
 
-  .m-status{display:flex;align-items:center;gap:var(--g1) var(--g3);flex-wrap:wrap;padding:var(--g3);border-radius:var(--g3);background:var(--pane);border:.5px solid var(--sep);font-size:var(--fs1);color:var(--fg2)}
+  .m-status{display:flex;align-items:center;gap:var(--g1) var(--g3);flex-wrap:wrap;padding:var(--g3) 0 0;border-radius:0;background:transparent;font-size:var(--fs1);color:var(--fg2)}
   .m-status .pd{margin:0}.m-status .pd.ok{background:var(--up)}.m-status .pd.err{background:var(--down)}
   #mStatusTxt{flex:1 1 200px;min-width:0}
   .m-fee{color:var(--fg3)}
-  .m-ptitle{display:block;font:700 var(--fs4) var(--display);margin:var(--g2) 0 calc(-1*var(--g1));scroll-margin-top:var(--g3)}
+  .m-ptitle{display:block;font:700 var(--fs3) var(--display);margin:var(--g3) 0 calc(-1*var(--g1));padding-top:var(--g3);border-top:.5px solid var(--sep);scroll-margin-top:var(--g3)}
   .panel{padding:0 0 var(--g4);background:transparent}
 
   /* bottom bar: 55px */
@@ -408,7 +410,7 @@ input.sw:focus-visible{outline:3px solid var(--accent-soft);outline-offset:1px}
 </style>
 
 <div class="window land" id="win">
-  <div class="m-head m-only"><span class="m-logo"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20h18"/><path d="M5 16v-3M9 16v-6M13 16v-4M17 16V8"/><path d="M4 11l5-5 4 3 7-6"/><path d="M16 3h4v4"/></svg></span><div class="m-brand"><b>IDX Trend Studio</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><p class="m-note m-only" role="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Use the desktop mode for better experience</span><button class="m-notebtn" id="mDesk">Desktop mode</button></p><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
+  <div class="m-head m-only"><span class="m-logo"><img src="logo.png" alt="" width="34" height="34"></span><div class="m-brand"><b>IDX Stock Forecast</b><span>Trend, forecast &amp; key levels</span></div><button class="m-iconbtn" id="mMenu" aria-label="Open settings and watchlist" aria-controls="side" aria-expanded="false"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button></div><p class="m-note m-only" role="note"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg><span>Use the desktop mode for better experience</span><button class="m-notebtn" id="mDesk">Desktop mode</button></p><button class="m-tick m-only" id="mTick" aria-label="Choose another ticker"><span class="m-tkb"><b id="mTk">–</b><span class="m-name" id="mName"></span><span class="m-pxrow"><span class="m-px" id="mPx">–</span><span class="m-chg" id="mChg"></span></span></span><span class="m-ohlc" id="mOhlc"></span><span class="pill m-src" id="mSrc"></span><span class="m-chev"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></span></button>
   <header class="titlebar">
     <div class="lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <button class="icon-btn" id="sideToggle" aria-label="Show or hide the customisation menu" aria-controls="side" aria-expanded="true"><svg width="18" height="14" viewBox="0 0 18 14" aria-hidden="true"><rect x=".75" y=".75" width="16.5" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M6.5 1v12" stroke="currentColor" stroke-width="1.5"/></svg></button>

@@ -1,4 +1,4 @@
-# IDX Trend Studio
+# IDX Stock Forecast
 
 A local analysis and forecasting tool for Indonesian (IDX) stocks. It has two interfaces:
 

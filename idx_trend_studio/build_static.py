@@ -129,6 +129,9 @@ def main():
         sys.exit("index.html: <meta charset> not found; cannot switch the page to static mode")
     html = html.replace(marker, marker + '<meta name="idx-static" content="data/">', 1)
     (out / "index.html").write_text(html, encoding="utf-8")
+    for f in (HERE / "static").iterdir():                # other page files (icon, ...)
+        if f.is_file() and f.name != "index.html":
+            shutil.copy2(f, out / f.name)
     (out / ".nojekyll").write_text("", encoding="utf-8")
     print(f"site written to {out} in {time.time() - t0:.0f}s ({datetime.now():%H:%M:%S})")
 
