@@ -14,9 +14,11 @@ Usage:
     python build_static.py --only BBRI,BBCA      # a few tickers (quick local test)
     python build_static.py --no-deep             # prices only
     python build_static.py --db PATH             # also include IDX-API information from a local database
+    python build_static.py --min-last-bar 2026-11-20   # publish nothing if Yahoo's data is older than that
 """
 import argparse
 import json
+import os
 import shutil
 import sys
 import time
@@ -61,6 +63,8 @@ def main():
     ap.add_argument("--only", help="comma-separated tickers instead of the whole watchlist")
     ap.add_argument("--no-deep", action="store_true", help="skip the Deep Forecast models")
     ap.add_argument("--db", help="IDX-API database.sqlite to read dividends, ratios and foreign flow from")
+    ap.add_argument("--min-last-bar", help="YYYY-MM-DD of the site now online: if Yahoo's newest bar is older, publish nothing "
+                                           "(Yahoo sometimes drops the latest day for a while)")
     a = ap.parse_args()
 
     out = Path(a.out)
@@ -81,6 +85,13 @@ def main():
     if not bars:
         sys.exit("Yahoo Finance returned no data; nothing to publish.")
     last = max(b[-1]["t"] for b in bars.values())
+    if a.min_last_bar and last < a.min_last_bar:
+        msg = f"Yahoo's newest bar is {last}, older than the {a.min_last_bar} already online; keeping the current site."
+        print(f"::warning::{msg}")
+        if os.environ.get("GITHUB_OUTPUT"):
+            with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+                fh.write("stale=true\n")
+        return
     write(data / "bars.json", {"bars": bars, "missing": missing, "fetched": started.strftime("%Y-%m-%d %H:%M WIB")})
     steps.append({"id": "prices", "label": "1 · yfinance", "state": "ok" if not missing else "warn",
                   "detail": f"{len(bars)}/{len(codes)} tickers to {last}" + (f" · no data: {', '.join(missing)}" if missing else ""),
