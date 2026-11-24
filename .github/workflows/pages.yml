@@ -6,15 +6,22 @@
 name: Publish to GitHub Pages
 
 on:
-  # During trading hours the prices are refreshed every 10 minutes (quick: the Deep Forecast already
-  # online is kept). After the close the full build (prices + Deep Forecast) is tried every hour.
-  # GitHub starts scheduled runs late and on busy days drops some, hence the many tries at off-peak
-  # minutes. A run whose Yahoo data is older than the site online publishes nothing.
+  # The 10-minute price updates during trading hours are started from outside (cron-job.org calls the
+  # workflow_dispatch API with source=cron): GitHub's own schedule here runs hours late or not at all.
+  # Trading hours (09:00-16:00 WIB, Mon-Fri): prices only, the Deep Forecast already online is kept.
+  # After the close: the full build (prices + Deep Forecast), retried until one is online.
+  # The schedule below is only a backup for the after-close build.
+  # A run whose Yahoo data is older than the site online publishes nothing.
   schedule:
-    - cron: "*/10 2-8 * * 1-5"  # 09:00-15:50 WIB, Monday-Friday, every 10 minutes: prices only
     - cron: "17 9-16 * * 1-5"   # 16:17-23:17 WIB, Monday-Friday, every hour after the IDX close: full build
     - cron: "47 0 * * 2-6"      # 07:47 WIB the next morning (Tuesday-Saturday), last backup
-  workflow_dispatch:            # "Run workflow" button in the Actions tab
+  workflow_dispatch:            # "Run workflow" button in the Actions tab (always a full build), or cron-job.org
+    inputs:
+      source:
+        description: "manual = full build now; cron = automatic (prices only in trading hours, skip once today's close is online)"
+        default: manual
+        type: choice
+        options: [manual, cron]
   push:
     branches: [main]
     paths:
@@ -53,19 +60,19 @@ jobs:
           echo "Data online up to: ${last:-unknown}, built ${built:-unknown} (today in WIB: $today)"
           echo "last_bar=$last" >> "$GITHUB_OUTPUT"
           now=$(TZ=Asia/Jakarta date +%H:%M); dow=$(TZ=Asia/Jakarta date +%u)
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$dow" -le 5 ] && [ ! "$now" \< "09:00" ] && [ "$now" \< "16:00" ]; then
+          auto=${{ github.event_name == 'schedule' || inputs.source == 'cron' }}
+          echo "Started by ${{ github.event_name }} (automatic: $auto) at $now WIB"
+          if [ "$auto" = "true" ] && [ "$dow" -le 5 ] && [ ! "$now" \< "09:00" ] && [ "$now" \< "16:00" ]; then
             # Trading hours: refresh the prices only and keep the Deep Forecast already online.
             echo "::notice::Trading hours ($now WIB): quick price update."
             echo "quick=true" >> "$GITHUB_OUTPUT"
-          elif [ "${{ github.event_name }}" = "schedule" ] && [ -n "$built" ] && [ ! "$built" \< "$today 16:00" ]; then
-            # The hourly retries stop once a full build made after today's close (16:00 WIB) is online.
+          elif [ "$auto" = "true" ] && [ -n "$built" ] && [ ! "$built" \< "$today 16:00" ]; then
+            # The automatic retries stop once a full build made after today's close (16:00 WIB) is online.
             # A build made during trading hours holds an unfinished candle, so it does not count.
             # A manual run or a push always does the full build.
             echo "::notice::Today's close is already online (built $built); nothing to do."
             echo "done=true" >> "$GITHUB_OUTPUT"
           fi
-          # The prices online: a ticker for which Yahoo now returns an older last day keeps the newer rows.
-          curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/bars.json" -o prev_bars.json             || rm -f prev_bars.json
 
       - uses: actions/setup-python@v5
         if: steps.live.outputs.done != 'true'
@@ -82,7 +89,7 @@ jobs:
         if: steps.live.outputs.done != 'true'
         working-directory: idx_trend_studio
         run: >-
-          python build_static.py --out ../site --prev-bars ../prev_bars.json
+          python build_static.py --out ../site
           ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
           ${{ steps.live.outputs.quick == 'true' && format('--deep-from https://{0}.github.io/{1}/data/deep/', github.repository_owner, github.event.repository.name) || '' }}
 
