@@ -56,11 +56,12 @@ jobs:
           last=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json"                  | python -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
           echo "Data online up to: ${last:-unknown}"
           echo "last_bar=$last" >> "$GITHUB_OUTPUT"
+          curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/bars.json" -o prev_bars.json             || rm -f prev_bars.json
 
       - name: Build the site (prices + Deep Forecast)
         id: build
         working-directory: idx_trend_studio
-        run: python build_static.py --out ../site ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
+        run: python build_static.py --out ../site --prev-bars ../prev_bars.json ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
 
       - uses: actions/configure-pages@v5
         if: steps.build.outputs.stale != 'true'

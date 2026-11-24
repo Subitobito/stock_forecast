@@ -65,6 +65,8 @@ def main():
     ap.add_argument("--db", help="IDX-API database.sqlite to read dividends, ratios and foreign flow from")
     ap.add_argument("--min-last-bar", help="YYYY-MM-DD of the site now online: if Yahoo's newest bar is older, publish nothing "
                                            "(Yahoo sometimes drops the latest day for a while)")
+    ap.add_argument("--prev-bars", help="bars.json of the site now online: a ticker whose new data ends earlier keeps the newer "
+                                        "rows from it, and a ticker Yahoo skipped keeps its old data")
     a = ap.parse_args()
 
     out = Path(a.out)
@@ -92,9 +94,32 @@ def main():
             with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
                 fh.write("stale=true\n")
         return
+    kept = []
+    if a.prev_bars and Path(a.prev_bars).is_file():
+        try:
+            prev = json.loads(Path(a.prev_bars).read_text(encoding="utf-8")).get("bars", {})
+        except Exception as e:
+            prev = {}
+            print(f"(previous bars not read: {e})")
+        for code in codes:
+            old, new = prev.get(code), bars.get(code)
+            if not old:
+                continue
+            if not new:
+                bars[code] = old
+                kept.append(f"{code} (all, to {old[-1]['t']})")
+                continue
+            tail = [b for b in old if b["t"] > new[-1]["t"]]
+            if tail:
+                bars[code] = new + tail
+                kept.append(f"{code} ({tail[0]['t']}..{tail[-1]['t']})")
+        missing = [c for c in codes if c not in bars]
+        if kept:
+            print("::notice::Yahoo had older data for some tickers; kept the newer rows already online: " + ", ".join(kept))
     write(data / "bars.json", {"bars": bars, "missing": missing, "fetched": started.strftime("%Y-%m-%d %H:%M WIB")})
     steps.append({"id": "prices", "label": "1 · yfinance", "state": "ok" if not missing else "warn",
-                  "detail": f"{len(bars)}/{len(codes)} tickers to {last}" + (f" · no data: {', '.join(missing)}" if missing else ""),
+                  "detail": f"{len(bars)}/{len(codes)} tickers to {last}" + (f" · no data: {', '.join(missing)}" if missing else "")
+                            + (f" · kept from the previous build: {', '.join(k.split(' ')[0] for k in kept)}" if kept else ""),
                   "at": started.strftime("%H:%M:%S")})
     print(f"prices: {len(bars)} tickers in {time.time() - t0:.0f}s, last bar {last}")
 
