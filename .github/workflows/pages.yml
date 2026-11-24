@@ -44,14 +44,17 @@ jobs:
       - name: Read the date of the data now online
         id: live
         run: |
-          last=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json" \
-                 | python3 -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
+          status=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json" || true)
+          last=$(echo "$status" | python3 -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
+          built=$(echo "$status" | python3 -c "import json,sys; print(json.load(sys.stdin).get('built',''))" 2>/dev/null || true)
           today=$(TZ=Asia/Jakarta date +%F)
-          echo "Data online up to: ${last:-unknown} (today in WIB: $today)"
+          echo "Data online up to: ${last:-unknown}, built ${built:-unknown} (today in WIB: $today)"
           echo "last_bar=$last" >> "$GITHUB_OUTPUT"
-          # The hourly retries stop once today's close is online; a manual run or a push always rebuilds.
-          if [ "${{ github.event_name }}" = "schedule" ] && [ -n "$last" ] && [ ! "$last" \< "$today" ]; then
-            echo "::notice::Today's data ($last) is already online; nothing to do."
+          # The hourly retries stop once a build made after today's close (16:00 WIB) is online.
+          # A build made during trading hours holds an unfinished candle, so it does not count.
+          # A manual run or a push always rebuilds.
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -n "$built" ] && [ ! "$built" \< "$today 16:00" ]; then
+            echo "::notice::Today's close is already online (built $built); nothing to do."
             echo "done=true" >> "$GITHUB_OUTPUT"
           fi
 
