@@ -64,6 +64,8 @@ jobs:
             echo "::notice::Today's close is already online (built $built); nothing to do."
             echo "done=true" >> "$GITHUB_OUTPUT"
           fi
+          # The prices online: a ticker for which Yahoo now returns an older last day keeps the newer rows.
+          curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/bars.json" -o prev_bars.json             || rm -f prev_bars.json
 
       - uses: actions/setup-python@v5
         if: steps.live.outputs.done != 'true'
@@ -80,7 +82,7 @@ jobs:
         if: steps.live.outputs.done != 'true'
         working-directory: idx_trend_studio
         run: >-
-          python build_static.py --out ../site
+          python build_static.py --out ../site --prev-bars ../prev_bars.json
           ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
           ${{ steps.live.outputs.quick == 'true' && format('--deep-from https://{0}.github.io/{1}/data/deep/', github.repository_owner, github.event.repository.name) || '' }}
 
