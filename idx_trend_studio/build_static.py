@@ -15,6 +15,8 @@ Usage:
     python build_static.py --no-deep             # prices only
     python build_static.py --db PATH             # also include IDX-API information from a local database
     python build_static.py --min-last-bar 2026-11-20   # publish nothing if Yahoo's data is older than that
+    python build_static.py --deep-from https://USER.github.io/REPO/data/deep/
+                                                 # prices only; copy the Deep Forecast already online (intraday update)
 """
 import argparse
 import json
@@ -23,6 +25,7 @@ import shutil
 import sys
 import time
 import traceback
+import urllib.request
 from datetime import datetime
 from pathlib import Path
 
@@ -52,6 +55,20 @@ def run_deep(bars):
     return idx_source.clean(res)
 
 
+def fetch_deep(src, code):
+    """The Deep Forecast file already published for a ticker, or None when it is missing or unreadable."""
+    try:
+        if src.startswith(("http://", "https://")):
+            with urllib.request.urlopen(src.rstrip("/") + f"/{code}.json", timeout=30) as r:
+                obj = json.load(r)
+        else:
+            obj = json.loads((Path(src) / f"{code}.json").read_text(encoding="utf-8"))
+        return obj if obj.get("state") == "done" else None
+    except Exception as e:
+        print(f"deep {code}: no copy to keep ({type(e).__name__}); computing it")
+        return None
+
+
 def write(path, obj):
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, separators=(",", ":")), encoding="utf-8")
@@ -63,6 +80,8 @@ def main():
     ap.add_argument("--only", help="comma-separated tickers instead of the whole watchlist")
     ap.add_argument("--no-deep", action="store_true", help="skip the Deep Forecast models")
     ap.add_argument("--db", help="IDX-API database.sqlite to read dividends, ratios and foreign flow from")
+    ap.add_argument("--deep-from", help="URL (or folder) holding the Deep Forecast JSON files already online: copy them instead "
+                                        "of running the models (quick intraday price update); a ticker missing there is computed")
     ap.add_argument("--min-last-bar", help="YYYY-MM-DD of the site now online: if Yahoo's newest bar is older, publish nothing "
                                            "(Yahoo sometimes drops the latest day for a while)")
     ap.add_argument("--prev-bars", help="bars.json of the site now online: a ticker whose new data ends earlier keeps the newer "
@@ -128,9 +147,15 @@ def main():
         why = "skipped (--no-deep)" if a.no_deep else f"unavailable ({server.DEEP_ERR})"
         steps.append({"id": "deep", "label": "2 · Deep Forecast", "state": "skip", "detail": why, "at": ""})
     else:
-        done, failed = 0, []
+        done, failed, reused = 0, [], 0
         for code in [c for c in codes if c in bars and c != "JKSE"] + (["JKSE"] if "JKSE" in bars else []):
             t1 = time.time()
+            if a.deep_from:
+                old = fetch_deep(a.deep_from, code)
+                if old is not None:
+                    write(data / "deep" / f"{code}.json", old)
+                    reused += 1
+                    continue
             try:
                 res = run_deep(bars[code])
                 write(data / "deep" / f"{code}.json", {"state": "done", "result": res, "built": started.strftime("%Y-%m-%d %H:%M WIB")})
@@ -140,8 +165,12 @@ def main():
                 failed.append(code)
                 print(f"deep {code}: FAILED {type(e).__name__}: {e}")
                 traceback.print_exc()
+        detail = (f"{done} tickers" if done or not reused else "") \
+            + (f"{' · ' if done else ''}{reused} kept from the last full build" if reused else "") \
+            + (f" · failed: {', '.join(failed)}" if failed else "")
         steps.append({"id": "deep", "label": "2 · Deep Forecast", "state": "ok" if not failed else "warn",
-                      "detail": f"{done} tickers" + (f" · failed: {', '.join(failed)}" if failed else ""), "at": server.now_wib().strftime("%H:%M:%S")})
+                      "detail": detail, "at": server.now_wib().strftime("%H:%M:%S")})
+        print(f"deep: {done} computed, {reused} kept, {len(failed)} failed")
 
     # 3. IDX-API information (only from a local database)
     idx = {"info": {}, "market": {}, "db": {}}

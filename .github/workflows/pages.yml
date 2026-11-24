@@ -6,13 +6,14 @@
 name: Publish to GitHub Pages
 
 on:
-  # GitHub can start a scheduled run hours late, so the day's close is tried several times.
-  # A run whose Yahoo data is older than the site already online publishes nothing.
+  # During trading hours the prices are refreshed every 10 minutes (quick: the Deep Forecast already
+  # online is kept). After the close the full build (prices + Deep Forecast) is tried every hour.
+  # GitHub starts scheduled runs late and on busy days drops some, hence the many tries at off-peak
+  # minutes. A run whose Yahoo data is older than the site online publishes nothing.
   schedule:
-    - cron: "30 9 * * 1-5"     # 16:30 WIB, Monday-Friday, after the IDX close
-    - cron: "30 11 * * 1-5"    # 18:30 WIB, backup
-    - cron: "30 13 * * 1-5"    # 20:30 WIB, backup
-    - cron: "30 0 * * 2-6"     # 07:30 WIB the next morning (Tuesday-Saturday), last backup
+    - cron: "*/10 2-8 * * 1-5"  # 09:00-15:50 WIB, Monday-Friday, every 10 minutes: prices only
+    - cron: "17 9-16 * * 1-5"   # 16:17-23:17 WIB, Monday-Friday, every hour after the IDX close: full build
+    - cron: "47 0 * * 2-6"      # 07:47 WIB the next morning (Tuesday-Saturday), last backup
   workflow_dispatch:            # "Run workflow" button in the Actions tab
   push:
     branches: [main]
@@ -38,36 +39,58 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
-      stale: ${{ steps.build.outputs.stale }}
+      stale: ${{ steps.live.outputs.done == 'true' || steps.build.outputs.stale == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read the date of the data now online
+        id: live
+        run: |
+          status=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json" || true)
+          last=$(echo "$status" | python3 -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
+          built=$(echo "$status" | python3 -c "import json,sys; print(json.load(sys.stdin).get('built',''))" 2>/dev/null || true)
+          today=$(TZ=Asia/Jakarta date +%F)
+          echo "Data online up to: ${last:-unknown}, built ${built:-unknown} (today in WIB: $today)"
+          echo "last_bar=$last" >> "$GITHUB_OUTPUT"
+          now=$(TZ=Asia/Jakarta date +%H:%M); dow=$(TZ=Asia/Jakarta date +%u)
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$dow" -le 5 ] && [ ! "$now" \< "09:00" ] && [ "$now" \< "16:00" ]; then
+            # Trading hours: refresh the prices only and keep the Deep Forecast already online.
+            echo "::notice::Trading hours ($now WIB): quick price update."
+            echo "quick=true" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "schedule" ] && [ -n "$built" ] && [ ! "$built" \< "$today 16:00" ]; then
+            # The hourly retries stop once a full build made after today's close (16:00 WIB) is online.
+            # A build made during trading hours holds an unfinished candle, so it does not count.
+            # A manual run or a push always does the full build.
+            echo "::notice::Today's close is already online (built $built); nothing to do."
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+          # The prices online: a ticker for which Yahoo now returns an older last day keeps the newer rows.
+          curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/bars.json" -o prev_bars.json             || rm -f prev_bars.json
+
       - uses: actions/setup-python@v5
+        if: steps.live.outputs.done != 'true'
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Install libraries
+        if: steps.live.outputs.done != 'true'
         run: pip install yfinance pandas numpy scipy scikit-learn xgboost statsmodels
-
-      - name: Read the date of the data now online
-        id: live
-        run: |
-          last=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json"                  | python -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
-          echo "Data online up to: ${last:-unknown}"
-          echo "last_bar=$last" >> "$GITHUB_OUTPUT"
-          curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/bars.json" -o prev_bars.json             || rm -f prev_bars.json
 
       - name: Build the site (prices + Deep Forecast)
         id: build
+        if: steps.live.outputs.done != 'true'
         working-directory: idx_trend_studio
-        run: python build_static.py --out ../site --prev-bars ../prev_bars.json ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
+        run: >-
+          python build_static.py --out ../site --prev-bars ../prev_bars.json
+          ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
+          ${{ steps.live.outputs.quick == 'true' && format('--deep-from https://{0}.github.io/{1}/data/deep/', github.repository_owner, github.event.repository.name) || '' }}
 
       - uses: actions/configure-pages@v5
-        if: steps.build.outputs.stale != 'true'
+        if: steps.live.outputs.done != 'true' && steps.build.outputs.stale != 'true'
 
       - uses: actions/upload-pages-artifact@v3
-        if: steps.build.outputs.stale != 'true'
+        if: steps.live.outputs.done != 'true' && steps.build.outputs.stale != 'true'
         with:
           path: site
 
