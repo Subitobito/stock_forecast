@@ -6,13 +6,12 @@
 name: Publish to GitHub Pages
 
 on:
-  # GitHub can start a scheduled run hours late, so the day's close is tried several times.
-  # A run whose Yahoo data is older than the site already online publishes nothing.
+  # GitHub starts scheduled runs late and on busy days silently drops them (most often at :00 and :30),
+  # so the job is tried every hour after the IDX close at an off-peak minute. A run whose data is
+  # already online, or whose Yahoo data is older than the site online, publishes nothing.
   schedule:
-    - cron: "30 9 * * 1-5"     # 16:30 WIB, Monday-Friday, after the IDX close
-    - cron: "30 11 * * 1-5"    # 18:30 WIB, backup
-    - cron: "30 13 * * 1-5"    # 20:30 WIB, backup
-    - cron: "30 0 * * 2-6"     # 07:30 WIB the next morning (Tuesday-Saturday), last backup
+    - cron: "17 9-16 * * 1-5"   # 16:17-23:17 WIB, Monday-Friday, every hour after the IDX close
+    - cron: "47 0 * * 2-6"      # 07:47 WIB the next morning (Tuesday-Saturday), last backup
   workflow_dispatch:            # "Run workflow" button in the Actions tab
   push:
     branches: [main]
@@ -38,35 +37,45 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     outputs:
-      stale: ${{ steps.build.outputs.stale }}
+      stale: ${{ steps.live.outputs.done == 'true' || steps.build.outputs.stale == 'true' }}
     steps:
       - uses: actions/checkout@v4
 
+      - name: Read the date of the data now online
+        id: live
+        run: |
+          last=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json" \
+                 | python3 -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
+          today=$(TZ=Asia/Jakarta date +%F)
+          echo "Data online up to: ${last:-unknown} (today in WIB: $today)"
+          echo "last_bar=$last" >> "$GITHUB_OUTPUT"
+          # The hourly retries stop once today's close is online; a manual run or a push always rebuilds.
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -n "$last" ] && [ ! "$last" \< "$today" ]; then
+            echo "::notice::Today's data ($last) is already online; nothing to do."
+            echo "done=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/setup-python@v5
+        if: steps.live.outputs.done != 'true'
         with:
           python-version: "3.12"
           cache: pip
 
       - name: Install libraries
+        if: steps.live.outputs.done != 'true'
         run: pip install yfinance pandas numpy scipy scikit-learn xgboost statsmodels
-
-      - name: Read the date of the data now online
-        id: live
-        run: |
-          last=$(curl -fsS "https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/data/status.json"                  | python -c "import json,sys; print(json.load(sys.stdin).get('last_bar',''))" 2>/dev/null || true)
-          echo "Data online up to: ${last:-unknown}"
-          echo "last_bar=$last" >> "$GITHUB_OUTPUT"
 
       - name: Build the site (prices + Deep Forecast)
         id: build
+        if: steps.live.outputs.done != 'true'
         working-directory: idx_trend_studio
         run: python build_static.py --out ../site ${{ steps.live.outputs.last_bar && format('--min-last-bar {0}', steps.live.outputs.last_bar) || '' }}
 
       - uses: actions/configure-pages@v5
-        if: steps.build.outputs.stale != 'true'
+        if: steps.live.outputs.done != 'true' && steps.build.outputs.stale != 'true'
 
       - uses: actions/upload-pages-artifact@v3
-        if: steps.build.outputs.stale != 'true'
+        if: steps.live.outputs.done != 'true' && steps.build.outputs.stale != 'true'
         with:
           path: site
 
